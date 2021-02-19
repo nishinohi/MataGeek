@@ -1,4 +1,14 @@
 <resources>
     <string name="app_name">MataGeek</string>
     <string name="MataGeek">MataGeek</string>
+    <string name="scanner_label">Scanner</string>
+    <string name="bluetooth_disabled_title">Bluetooth is not avalable</string>
+    <string name="bluetooth_disabled_info">bluetooth disable info</string>
+    <string name="bluetooth_disabled_action">eable</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="scanner_guide_title">no device title</string>
+    <string name="scanner_guide_info">no device info</string>
+    <string name="scanner_guide_location_info">no device location info</string>
+    <string name="scanner_guide_location_action">Enable</string>
 </resources>

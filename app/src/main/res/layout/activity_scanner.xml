@@ -17,7 +17,7 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/scanner_tool_bar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?actionBarSize"
             app:title="@string/MataGeek" />
 
         <ProgressBar
@@ -28,6 +28,17 @@
             android:indeterminate="true" />
 
     </com.google.android.material.appbar.AppBarLayout>
+
+    <include
+        android:id="@+id/bluetooth_disable"
+        layout="@layout/info_no_bluetooth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scanner_bar_layout" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

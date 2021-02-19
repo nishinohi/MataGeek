@@ -3,5 +3,7 @@
     <dimen name="scanner_horizontal_margin">16dp</dimen>
     <dimen name="icon_background_size">36dp</dimen>
     <dimen name="scanner_padding_top">8dp</dimen>
-    <dimen name="scanner_padding_bottom">8</dimen>
+    <dimen name="scanner_padding_bottom">8dp</dimen>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
 </resources>
