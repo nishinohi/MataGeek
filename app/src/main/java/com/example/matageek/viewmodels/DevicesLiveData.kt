@@ -20,7 +20,6 @@ class DevicesLiveData(private val filterUuidRequired: Boolean, private val filte
         }
         filteredDevices = temp.toMutableList()
         postValue(filteredDevices)
-        Log.d("SCAN", "applyFilter: $filteredDevices")
         return filteredDevices.isNotEmpty()
     }
 

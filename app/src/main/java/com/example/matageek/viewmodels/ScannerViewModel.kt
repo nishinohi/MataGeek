@@ -53,7 +53,6 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
             devicesLiveData.deviceDiscovered(result)
             devicesLiveData.applyFilter()
             scannerLiveData.recordFound()
-            Log.d("SCAN", "onScanResult: $result")
         }
 
         override fun onScanFailed(errorCode: Int) {
