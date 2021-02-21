@@ -10,21 +10,33 @@ import com.example.matageek.R
 import com.example.matageek.databinding.DeviceItemBinding
 import com.example.matageek.databinding.DeviceItemBinding.*
 
-class DevicesAdapter :
+class DevicesAdapter(val onItemClick: (DiscoveredDevice) -> Unit) :
     ListAdapter<DiscoveredDevice, DevicesAdapter.DeviceViewHolder>(DiscoveredDeviceDiffCallback) {
 
-    class DeviceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val _binding: DeviceItemBinding = bind(itemView)
+    class DeviceViewHolder(itemView: View, val onItemClick: (DiscoveredDevice) -> Unit) :
+        RecyclerView.ViewHolder(itemView) {
+        private var _binding: DeviceItemBinding = bind(itemView)
         val binding get() = _binding
+        var currentDiscoveredDevice: DiscoveredDevice? = null
+
+        init {
+            binding.deviceContainer.setOnClickListener {
+                currentDiscoveredDevice?.let {
+                    onItemClick(it)
+                }
+            }
+        }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DeviceViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.device_item, parent, false)
-        return DeviceViewHolder(view)
+        return DeviceViewHolder(view, onItemClick)
     }
 
     override fun onBindViewHolder(holder: DeviceViewHolder, position: Int) {
         val discoveredDevice: DiscoveredDevice = getItem(position)
+        holder.currentDiscoveredDevice = discoveredDevice
         holder.binding.deviceName.text = discoveredDevice.name ?: "Unknown Device"
         holder.binding.deviceAddress.text = discoveredDevice.device.address
         // TODO RSSI
@@ -34,13 +46,13 @@ class DevicesAdapter :
         override fun areItemsTheSame(
             oldItem: DiscoveredDevice, newItem: DiscoveredDevice,
         ): Boolean {
-            return oldItem.device.address == newItem.device.address
+            return oldItem.device == newItem.device
         }
 
         override fun areContentsTheSame(
             oldItem: DiscoveredDevice, newItem: DiscoveredDevice,
         ): Boolean {
-            return oldItem.device.address == newItem.device.address
+            return !oldItem.hasRssiLevelChanged()
         }
 
     }

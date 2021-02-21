@@ -24,7 +24,9 @@ class ScannerActivity : AppCompatActivity() {
         val scannerViewModel: ScannerViewModel by viewModels()
         this.scannerViewModel = scannerViewModel
         scannerViewModel.scannerLiveData.observe(this, this::startScan)
-        val adapter = DevicesAdapter()
+        val adapter = DevicesAdapter {
+            Log.d("MATAG", "onCreate: $it")
+        }
         binding.scannedDeviceList.adapter = adapter
         scannerViewModel.devicesLiveData.observe(this, {
             it?.let {
@@ -35,6 +37,5 @@ class ScannerActivity : AppCompatActivity() {
 
     private fun startScan(scannerStateLiveData: ScannerStateLiveData) {
         this.scannerViewModel.startScan()
-        Log.d("SCAN", "startScan: $scannerStateLiveData")
     }
 }
