@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.matageek.adapter.DevicesAdapter
 import com.example.matageek.databinding.ActivityScannerBinding
 import com.example.matageek.util.Util
@@ -22,17 +20,17 @@ class ScannerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         _binding = ActivityScannerBinding.inflate(layoutInflater)
         setContentView(binding.root)
-//        setContentView(R.layout.activity_scanner)
-        val isEnable = Util.isBleEnabled(this);
-        Log.d("MATAG", "is ble enable:${isEnable}")
+
         val scannerViewModel: ScannerViewModel by viewModels()
         this.scannerViewModel = scannerViewModel
         scannerViewModel.scannerLiveData.observe(this, this::startScan)
-        val recyclerView = findViewById<RecyclerView>(R.id.scanned_device_list)
-//        recyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
-        binding.scannedDeviceList.addItemDecoration(DividerItemDecoration(this,
-            DividerItemDecoration.VERTICAL))
-        binding.scannedDeviceList.adapter = DevicesAdapter(scannerViewModel.devicesLiveData, this)
+        val adapter = DevicesAdapter()
+        binding.scannedDeviceList.adapter = adapter
+        scannerViewModel.devicesLiveData.observe(this, {
+            it?.let {
+                adapter.submitList(it)
+            }
+        })
     }
 
     private fun startScan(scannerStateLiveData: ScannerStateLiveData) {

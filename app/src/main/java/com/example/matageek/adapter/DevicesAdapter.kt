@@ -3,25 +3,15 @@ package com.example.matageek.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.matageek.R
-import com.example.matageek.ScannerActivity
 import com.example.matageek.databinding.DeviceItemBinding
 import com.example.matageek.databinding.DeviceItemBinding.*
-import com.example.matageek.viewmodels.DevicesLiveData
 
-class DevicesAdapter(private val devicesLiveData: DevicesLiveData, activity: ScannerActivity) :
-    RecyclerView.Adapter<DevicesAdapter.DeviceViewHolder>() {
-    private var devices: MutableList<DiscoveredDevice> = mutableListOf()
-
-    init {
-        val obj = Observer<MutableList<DiscoveredDevice>> { newDevices ->
-            devices = newDevices
-            notifyDataSetChanged()
-        }
-        devicesLiveData.observe(activity, obj)
-    }
+class DevicesAdapter :
+    ListAdapter<DiscoveredDevice, DevicesAdapter.DeviceViewHolder>(DiscoveredDeviceDiffCallback) {
 
     class DeviceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val _binding: DeviceItemBinding = bind(itemView)
@@ -34,14 +24,25 @@ class DevicesAdapter(private val devicesLiveData: DevicesLiveData, activity: Sca
     }
 
     override fun onBindViewHolder(holder: DeviceViewHolder, position: Int) {
-        val discoveredDevice: DiscoveredDevice = devices[position]
-        holder.binding.deviceName.text = devices[position].name ?: "Unknown Device"
+        val discoveredDevice: DiscoveredDevice = getItem(position)
+        holder.binding.deviceName.text = discoveredDevice.name ?: "Unknown Device"
         holder.binding.deviceAddress.text = discoveredDevice.device.address
         // TODO RSSI
     }
 
-    override fun getItemCount(): Int {
-        return devices.size
+    object DiscoveredDeviceDiffCallback : DiffUtil.ItemCallback<DiscoveredDevice>() {
+        override fun areItemsTheSame(
+            oldItem: DiscoveredDevice, newItem: DiscoveredDevice,
+        ): Boolean {
+            return oldItem.device.address == newItem.device.address
+        }
+
+        override fun areContentsTheSame(
+            oldItem: DiscoveredDevice, newItem: DiscoveredDevice,
+        ): Boolean {
+            return oldItem.device.address == newItem.device.address
+        }
+
     }
 
 }
