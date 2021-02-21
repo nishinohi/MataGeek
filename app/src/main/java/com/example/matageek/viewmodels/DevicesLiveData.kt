@@ -1,13 +1,10 @@
 package com.example.matageek.viewmodels
 
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.le.ScanRecord
 import android.bluetooth.le.ScanResult
 import android.os.ParcelUuid
 import android.util.Log
 import androidx.lifecycle.LiveData
 import com.example.matageek.adapter.DiscoveredDevice
-import java.util.*
 
 class DevicesLiveData(private val filterUuidRequired: Boolean, private val filterNearbyOnly: Boolean) :
     LiveData<MutableList<DiscoveredDevice>>() {
