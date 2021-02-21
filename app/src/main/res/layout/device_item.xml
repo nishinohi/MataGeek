@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:layout_marginRight="@dimen/scanner_horizontal_margin"
+        android:layout_marginEnd="@dimen/scanner_horizontal_margin"
         android:background="@drawable/ic_background"
         android:scaleType="center"
         app:srcCompat="@drawable/ic_device_item" />

@@ -19,6 +19,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
 
     val scannerLiveData: ScannerStateLiveData =
         ScannerStateLiveData(true, Util.isBleEnabled(application))
+    val devicesLiveData: DevicesLiveData = DevicesLiveData(false, false)
 
     fun refresh() {
         scannerLiveData.refresh()
@@ -48,6 +49,10 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
 
     val onScanResult: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
+            if (result == null) return
+            devicesLiveData.deviceDiscovered(result)
+            devicesLiveData.applyFilter()
+            scannerLiveData.recordFound()
             Log.d("SCAN", "onScanResult: $result")
         }
 

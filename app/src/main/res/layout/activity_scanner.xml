@@ -29,6 +29,20 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/scanned_device_list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:paddingTop="@dimen/activity_vertical_margin_top"
+        android:paddingBottom="@dimen/activity_vertical_margin_bottom"
+        android:scrollbars="none"
+        tools:listitem="@layout/device_item"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scanner_bar_layout" />
+
     <include
         android:id="@+id/bluetooth_disable"
         layout="@layout/info_no_bluetooth"

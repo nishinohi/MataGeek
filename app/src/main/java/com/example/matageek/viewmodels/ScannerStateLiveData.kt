@@ -6,6 +6,8 @@ class ScannerStateLiveData(
     private var locationEnabled: Boolean,
     private var bluetoothEnabled: Boolean,
 ) : LiveData<ScannerStateLiveData>() {
+    private var hasRecord: Boolean = false
+
     var isScanning: Boolean
 
     init {
@@ -32,6 +34,12 @@ class ScannerStateLiveData(
     }
 
     fun refresh() {
+        hasRecord = true
+        postValue(this)
+    }
+
+    fun recordFound() {
+        hasRecord = true
         postValue(this)
     }
 
