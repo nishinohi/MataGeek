@@ -11,4 +11,6 @@
     <string name="scanner_guide_info">no device info</string>
     <string name="scanner_guide_location_info">no device location info</string>
     <string name="scanner_guide_location_action">Enable</string>
+    <string name="cluster_size">ClusterSize</string>
+    <string name="node_activate">Activate</string>
 </resources>

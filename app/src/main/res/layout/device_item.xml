@@ -20,7 +20,7 @@
         app:srcCompat="@drawable/ic_device_item" />
 
     <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/device_name"
+        android:id="@+id/discovered_device_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/scanner_horizontal_margin"
@@ -36,7 +36,7 @@
         android:id="@+id/device_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/device_name"
+        android:layout_below="@id/discovered_device_name"
         android:layout_toEndOf="@id/device_icon"
         android:text="AA:BB:CC:DD:EE:FF"
         android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"

@@ -10,7 +10,7 @@ import com.example.matageek.R
 import com.example.matageek.databinding.DeviceItemBinding
 import com.example.matageek.databinding.DeviceItemBinding.*
 
-class DevicesAdapter(val onItemClick: (DiscoveredDevice) -> Unit) :
+class DevicesAdapter(private val onItemClick: (DiscoveredDevice) -> Unit) :
     ListAdapter<DiscoveredDevice, DevicesAdapter.DeviceViewHolder>(DiscoveredDeviceDiffCallback) {
 
     class DeviceViewHolder(itemView: View, val onItemClick: (DiscoveredDevice) -> Unit) :
@@ -37,7 +37,8 @@ class DevicesAdapter(val onItemClick: (DiscoveredDevice) -> Unit) :
     override fun onBindViewHolder(holder: DeviceViewHolder, position: Int) {
         val discoveredDevice: DiscoveredDevice = getItem(position)
         holder.currentDiscoveredDevice = discoveredDevice
-        holder.binding.deviceName.text = discoveredDevice.name ?: "Unknown Device"
+        holder.binding.discoveredDeviceName.text =
+            if (discoveredDevice.name.isEmpty()) "Unknown Device" else discoveredDevice.name
         holder.binding.deviceAddress.text = discoveredDevice.device.address
         // TODO RSSI
     }

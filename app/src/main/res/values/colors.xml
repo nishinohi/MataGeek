@@ -9,4 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="icon_background_color">#00BCD4</color>
     <color name="colorOnBackground">#D6D6D6</color>
+    <color name="section_color">#FFAA42</color>
+    <color name="background_opacity">#00FFFFFF</color>
 </resources>
