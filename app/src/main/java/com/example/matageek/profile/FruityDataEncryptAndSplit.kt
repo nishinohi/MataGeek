@@ -12,7 +12,7 @@ import java.nio.ByteOrder
 import javax.crypto.*
 import kotlin.math.min
 
-class FruityDataSplitter(
+class FruityDataEncryptAndSplit(
     private val encryptionNonce: Array<Int>?, private val encryptionKey: SecretKey?,
 ) : DataSplitter {
 
