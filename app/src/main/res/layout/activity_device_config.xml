@@ -1,133 +1,162 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".DeviceConfigActivity">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/sample"
-        android:layout_width="383dp"
-        android:layout_height="258dp"
-        android:text="TextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/device_config_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/cluster_size_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:padding="10dp"
-        android:text="@string/cluster_size"
-        android:textSize="20sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sample" />
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/device_config_tool_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"/>
+    </com.google.android.material.appbar.AppBarLayout>
 
-    <TextView
-        android:id="@+id/cluster_size"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:padding="10dp"
-        android:text="0"
-        android:textSize="20sp"
-        app:layout_constraintStart_toEndOf="@+id/cluster_size_text"
-        app:layout_constraintTop_toTopOf="@+id/cluster_size_text" />
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
 
-    <Button
-        android:id="@+id/activate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:text="@string/node_activate"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/cluster_size_text" />
 
-    <View
-        android:id="@+id/divider"
-        android:layout_width="383dp"
-        android:layout_height="1dp"
-        android:layout_marginTop="16dp"
-        android:background="?android:attr/listDivider"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.428"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cluster_size_text" />
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
-    <TextView
-        android:id="@+id/device_info_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Device Info"
-        android:textColor="@color/section_color"
-        android:textSize="12sp"
-        app:layout_constraintStart_toStartOf="@+id/cluster_size_text"
-        app:layout_constraintTop_toBottomOf="@+id/divider" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context=".DeviceConfigActivity">
 
-    <TextView
-        android:id="@+id/device_name_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="Device Name"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toStartOf="@+id/device_info_title"
-        app:layout_constraintTop_toBottomOf="@+id/device_info_title" />
+            <TextView
+                android:id="@+id/sample"
+                android:layout_width="383dp"
+                android:layout_height="258dp"
+                android:layout_marginTop="16dp"
+                android:text="TextView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/device_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:text="unknown name"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        app:layout_constraintStart_toStartOf="@+id/device_name_title"
-        app:layout_constraintTop_toBottomOf="@+id/device_name_title" />
+            <TextView
+                android:id="@+id/cluster_size_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:padding="10dp"
+                android:text="@string/cluster_size"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/sample" />
 
-    <ImageButton
-        android:id="@+id/ic_device_name_edit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:background="@color/background_opacity"
-        android:tint="?attr/colorAccent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/device_name_title"
-        app:srcCompat="@drawable/ic_text_edit" />
+            <TextView
+                android:id="@+id/cluster_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:padding="10dp"
+                android:text="0"
+                android:textSize="20sp"
+                app:layout_constraintStart_toEndOf="@+id/cluster_size_text"
+                app:layout_constraintTop_toTopOf="@+id/cluster_size_text" />
 
-    <TextView
-        android:id="@+id/battery_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Battery"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toStartOf="@+id/device_info_title"
-        app:layout_constraintTop_toBottomOf="@+id/device_name" />
+            <Button
+                android:id="@+id/activate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:text="@string/node_activate"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/cluster_size_text" />
 
-    <TextView
-        android:id="@+id/battery"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:text="52%"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        app:layout_constraintStart_toStartOf="@+id/battery_title"
-        app:layout_constraintTop_toBottomOf="@+id/battery_title" />
+            <View
+                android:id="@+id/divider"
+                android:layout_width="383dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:background="?android:attr/listDivider"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.428"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cluster_size_text" />
 
-    <ImageView
-        android:id="@+id/ic_battery"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/battery_title"
-        app:srcCompat="@drawable/ic_baseline_battery"
-        app:tint="?attr/colorAccent" />
+            <TextView
+                android:id="@+id/device_info_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Device Info"
+                android:textColor="@color/section_color"
+                android:textSize="12sp"
+                app:layout_constraintStart_toStartOf="@+id/cluster_size_text"
+                app:layout_constraintTop_toBottomOf="@+id/divider" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:id="@+id/device_name_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Device Name"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                app:layout_constraintStart_toStartOf="@+id/device_info_title"
+                app:layout_constraintTop_toBottomOf="@+id/device_info_title" />
+
+            <TextView
+                android:id="@+id/device_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="unknown name"
+                android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                app:layout_constraintStart_toStartOf="@+id/device_name_title"
+                app:layout_constraintTop_toBottomOf="@+id/device_name_title" />
+
+            <ImageButton
+                android:id="@+id/ic_device_name_edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="32dp"
+                android:background="@color/background_opacity"
+                android:tint="?attr/colorAccent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/device_name_title"
+                app:srcCompat="@drawable/ic_text_edit" />
+
+            <TextView
+                android:id="@+id/battery_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Battery"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                app:layout_constraintStart_toStartOf="@+id/device_info_title"
+                app:layout_constraintTop_toBottomOf="@+id/device_name" />
+
+            <TextView
+                android:id="@+id/battery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="52%"
+                android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                app:layout_constraintStart_toStartOf="@+id/battery_title"
+                app:layout_constraintTop_toBottomOf="@+id/battery_title" />
+
+            <ImageView
+                android:id="@+id/ic_battery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="32dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/battery_title"
+                app:srcCompat="@drawable/ic_baseline_battery"
+                app:tint="?attr/colorAccent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

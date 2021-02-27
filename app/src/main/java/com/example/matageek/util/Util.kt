@@ -2,8 +2,6 @@ package com.example.matageek.util
 
 import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.os.Build
-import android.provider.Settings
 
 class Util {
     companion object {
@@ -14,5 +12,18 @@ class Util {
         fun isLocationEnabled(context: Context) {
             // is marshmallow Or Above
         }
+
+        fun xorBytes(
+            src: ByteArray, offsetSrc: Int,
+            xor: ByteArray, offsetXor: Int, length: Int,
+        ): ByteArray {
+            val dist = ByteArray(length)
+            for (ii in 0 until length) {
+                dist[ii] =
+                    ((src[ii + offsetSrc]).toInt() xor (xor[ii + offsetXor]).toInt()).toByte()
+            }
+            return dist
+        }
+
     }
 }

@@ -1,5 +1,7 @@
 package com.example.matageek
 
+import com.example.matageek.fruity.types.ConnPacketHeader
+import com.example.matageek.fruity.types.MessageType
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -14,4 +16,12 @@ class ExampleUnitTest {
     fun addition_isCorrect() {
         assertEquals(4, 2 + 2)
     }
+
+    @Test
+    fun createPacket() {
+        val connPacketHeader = ConnPacketHeader(MessageType.ENCRYPT_CUSTOM_START, 24, 100)
+        val packet: ByteArray = connPacketHeader.createPacket()
+        assertEquals(1, 1 + 0)
+    }
 }
+
