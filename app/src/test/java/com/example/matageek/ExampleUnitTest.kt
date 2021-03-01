@@ -20,7 +20,7 @@ class ExampleUnitTest {
     @Test
     fun createPacket() {
         val connPacketHeader = ConnPacketHeader(MessageType.ENCRYPT_CUSTOM_START, 24, 100)
-        val packet: ByteArray = connPacketHeader.createPacket()
+        val packet: ByteArray = connPacketHeader.createBytePacket()
         assertEquals(1, 1 + 0)
     }
 }

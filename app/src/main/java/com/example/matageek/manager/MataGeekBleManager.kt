@@ -7,27 +7,19 @@ import android.bluetooth.BluetoothGattService
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.example.matageek.fruity.types.ConnPacketEncryptCustomStart
-import com.example.matageek.fruity.types.FmKeyId
 import com.example.matageek.profile.callback.MeshAccessDataCallback
 import com.example.matageek.profile.callback.EncryptionState
-import com.example.matageek.profile.FruityDataSplitter
+import com.example.matageek.profile.FruityDataEncryptAndSplit
 import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.livedata.ObservableBleManager
 import java.util.*
+import javax.crypto.SecretKey
 
-class MeshAccessManager(context: Context) :
+class MataGeekBleManager(context: Context) :
     ObservableBleManager(context) {
 
     /** MeshAccessService Characteristics */
-    private val nodeId: Short = 32000
     private lateinit var meshAccessService: BluetoothGattService
-    private val maTxCharacteristic: BluetoothGattCharacteristic
-        get() = meshAccessService.getCharacteristic(MA_UUID_TX_CHAR)
-    private val maRxCharacteristic: BluetoothGattCharacteristic
-        get() = meshAccessService.getCharacteristic(MA_UUID_RX_CHAR)
-
-    val encryptionState: MutableLiveData<EncryptionState> = MutableLiveData()
 
     override fun getGattCallback(): BleManagerGattCallback {
         return MataGeekBleManagerGattCallback()
@@ -35,24 +27,29 @@ class MeshAccessManager(context: Context) :
 
     private val meshAccessDataCallback: MeshAccessDataCallback =
         object : MeshAccessDataCallback() {
-            override fun onDataSent(device: BluetoothDevice, data: Data) {
-                Log.d("MATAG", "onDataSent: ")
+            override fun sendPacket(
+                data: Data, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?,
+            ) {
+                writeCharacteristic(this.maRxCharacteristic, data)
+                    .split(FruityDataEncryptAndSplit(encryptionNonce, encryptionKey)).with(this)
+                    .enqueue()
             }
+
+            override fun initialize() {
+                encryptionState.postValue(EncryptionState.NOT_ENCRYPTED)
+                setNotificationCallback(maTxCharacteristic).with(this)
+                enableNotifications(maTxCharacteristic).with(this).enqueue()
+            }
+
         }
 
     fun startEncryptionHandshake() {
-        encryptionState.postValue(EncryptionState.ENCRYPTING)
-        val connPacketEncryptCustomStart =
-            ConnPacketEncryptCustomStart(nodeId, 0, 1, FmKeyId.NETWORK, 1, 0)
-        writeCharacteristic(maRxCharacteristic,
-            Data(connPacketEncryptCustomStart.createPacket()))
-            .split(FruityDataSplitter(null, null)).enqueue()
+        meshAccessDataCallback.startEncryptionHandshake()
     }
 
     private inner class MataGeekBleManagerGattCallback : BleManagerGattCallback() {
         override fun initialize() {
-            setNotificationCallback(maTxCharacteristic).with(meshAccessDataCallback)
-            enableNotifications(maTxCharacteristic).enqueue()
+            meshAccessDataCallback.initialize()
         }
 
         override fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
@@ -62,6 +59,8 @@ class MeshAccessManager(context: Context) :
             if (maRxCharacteristic == null || maTxCharacteristic == null) return false
             meshAccessService = maService
 
+            meshAccessDataCallback.maTxCharacteristic = maTxCharacteristic
+            meshAccessDataCallback.maRxCharacteristic = maRxCharacteristic
             return (maRxCharacteristic.properties and BluetoothGattCharacteristic.PROPERTY_WRITE) > 0
         }
 
@@ -72,6 +71,8 @@ class MeshAccessManager(context: Context) :
     }
 
     companion object {
+        const val NODE_ID: Short = 32000
+
         /** MeshAccessService UUID */
         val MA_UUID_SERVICE: UUID = UUID.fromString("00000001-acce-423c-93fd-0c07a0051858")
 

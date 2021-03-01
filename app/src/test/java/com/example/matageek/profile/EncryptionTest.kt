@@ -1,13 +1,15 @@
 package com.example.matageek.profile
 
+import com.example.matageek.profile.callback.MeshAccessDataCallback
 import junit.framework.TestCase
+import no.nordicsemi.android.ble.data.Data
 import org.hamcrest.CoreMatchers.`is`
 import org.junit.Assert.assertThat
 import org.junit.Test
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 
-class FruityDataEncryptAndSplitTest : TestCase() {
+class EncryptionTest : TestCase() {
     @Test
     fun test_encrypt_packet_with_mic() {
         // first, (byte)0x 0x4EFA4C1D
@@ -24,8 +26,11 @@ class FruityDataEncryptAndSplitTest : TestCase() {
                 0xA7.toByte(), 0x58.toByte(), 0x89.toByte(), 0x0D.toByte(), 0xE8.toByte(),
                 0x77.toByte(), 0xED.toByte(), 0xDC.toByte(), 0xCA.toByte(), 0xCA.toByte(),
                 0x47.toByte(), 0x57.toByte())
-        assertThat(FruityDataEncryptAndSplit(encryptNonce, encryptKey).encryptPacketWithMIC(plainText,
-            13, encryptNonce, encryptKey), `is`(expect))
+        assertThat(FruityDataEncryptAndSplit(encryptNonce, encryptKey).encryptPacketWithMIC(
+            plainText,
+            13,
+            encryptNonce,
+            encryptKey), `is`(expect))
     }
 
     @Test
@@ -125,6 +130,66 @@ class FruityDataEncryptAndSplitTest : TestCase() {
         val expect = byteArrayOf(0xCA.toByte(), 0xCA.toByte(), 0x47.toByte(), 0x57.toByte())
         assertThat(FruityDataEncryptAndSplit(encryptNonce, encryptKey).generateMIC(encryptNonce,
             encryptKey, encryptedPacket, 13), `is`(expect))
+    }
+
+    @Test
+    fun test_mic_validation() {
+        // first, (byte)0x 0x4EFA4C1D
+        // second, (byte)0x 0x2A681932
+        val encryptNonce = arrayOf(1325026333, 711465266)
+        val encryptKey: SecretKey =
+            SecretKeySpec(byteArrayOf(0x03, 0x1C, 0xBD.toByte(), 0xBA.toByte(), 0x73, 0x42,
+                0xFD.toByte(), 0xB0.toByte(), 0x95.toByte(), 0x13, 0x81.toByte(), 0xAB.toByte(),
+                0x97.toByte(), 0x94.toByte(), 0x8C.toByte(), 0xD9.toByte()), "AES")
+        val encryptedPacket = byteArrayOf(0x79, 0x65, 0xA5.toByte(), 0xB6.toByte(), 0xA6.toByte(),
+            0xA7.toByte(), 0x58.toByte(), 0x89.toByte(), 0x0D.toByte(), 0xE8.toByte(),
+            0x77.toByte(), 0xED.toByte(), 0xDC.toByte(), 0xCA.toByte(), 0xCA.toByte(),
+            0x47.toByte(), 0x57.toByte()
+        )
+        val temp: MeshAccessDataCallback =
+            object : MeshAccessDataCallback() {
+                override fun sendPacket(
+                    data: Data, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?,
+                ) {
+                }
+
+                override fun initialize() {
+                }
+
+            }
+        assert(temp.checkMicValidation(
+            encryptedPacket, encryptNonce, encryptKey))
+    }
+
+    @Test
+    fun test_decrypt_packet() {
+        // first, (byte)0x 0x4EFA4C1D
+        // second, (byte)0x 0x2A681932
+        val aNonce = arrayOf(1325026333, 711465266)
+        val sessionKey: SecretKey = SecretKeySpec(byteArrayOf(0x03, 0x1C, 0xBD.toByte(),
+            0xBA.toByte(), 0x73, 0x42, 0xFD.toByte(), 0xB0.toByte(), 0x95.toByte(), 0x13,
+            0x81.toByte(), 0xAB.toByte(), 0x97.toByte(), 0x94.toByte(), 0x8C.toByte(),
+            0xD9.toByte()), "AES")
+        val encryptedPacket = byteArrayOf(0x79.toByte(), 0x65.toByte(), 0xA5.toByte(),
+            0xB6.toByte(), 0xA6.toByte(), 0xA7.toByte(), 0x58.toByte(), 0x89.toByte(),
+            0x0D.toByte(), 0xE8.toByte(), 0x77.toByte(), 0xED.toByte(),
+            0xDC.toByte(), 0xCA.toByte(), 0xCA.toByte(), 0x47.toByte(), 0x57.toByte())
+        val expect = byteArrayOf(0x1B.toByte(), 0x01.toByte(), 0x00.toByte(), 0x02.toByte(),
+            0x00.toByte(), 0xFC.toByte(), 0xD3.toByte(), 0xB8.toByte(),
+            0x64.toByte(), 0xAD.toByte(), 0x0F.toByte(), 0xE8.toByte(), 0x19.toByte())
+        val temp: MeshAccessDataCallback =
+            object : MeshAccessDataCallback() {
+                override fun sendPacket(
+                    data: Data, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?,
+                ) {
+                }
+
+                override fun initialize() {
+                }
+
+            }
+        assertThat(temp.decryptPacket(encryptedPacket, encryptedPacket.size, aNonce, sessionKey),
+            `is`(expect))
     }
 
 

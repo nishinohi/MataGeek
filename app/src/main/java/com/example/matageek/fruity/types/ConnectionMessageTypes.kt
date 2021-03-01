@@ -4,19 +4,30 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 interface ConnectionMessageTypes {
-    fun createPacket(): ByteArray
+    fun createBytePacket(): ByteArray
+
+    companion object {
+        const val SIS = 0
+    }
 }
 
 class ConnPacketHeader(
-    private val messageType: MessageType,
-    private val sender: Short,
-    private val receiver: Short,
+    val messageType: MessageType,
+    val sender: Short,
+    val receiver: Short,
 ) : ConnectionMessageTypes {
+
     companion object {
         const val SIZEOF_PACKET = 5
+        fun readFromBytePacket(bytePacket: ByteArray): ConnPacketHeader? {
+            if (bytePacket.size < SIZEOF_PACKET) return null
+            val byteBuffer = ByteBuffer.wrap(bytePacket).order(ByteOrder.LITTLE_ENDIAN)
+            return ConnPacketHeader(
+                MessageType.getMessageType(byteBuffer.get()), byteBuffer.short, byteBuffer.short)
+        }
     }
 
-    override fun createPacket(): ByteArray {
+    override fun createBytePacket(): ByteArray {
         val byteBuffer: ByteBuffer =
             ByteBuffer.allocate(SIZEOF_PACKET).order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(messageType.typeValue)
@@ -24,6 +35,7 @@ class ConnPacketHeader(
         byteBuffer.putShort(receiver)
         return byteBuffer.array()
     }
+
 }
 
 class ConnPacketModule(
@@ -58,29 +70,29 @@ class ConnPacketEncryptCustomStart(
         ConnPacketHeader(MessageType.ENCRYPT_CUSTOM_START, sender, receiver)
 
     companion object {
-        const val SIZEOF_PACKET =
-            ConnPacketHeader.SIZEOF_PACKET + 6
+        const val SIZEOF_PACKET = ConnPacketHeader.SIZEOF_PACKET + 6
     }
 
-    override fun createPacket(): ByteArray {
+    override fun createBytePacket(): ByteArray {
         val byteBuffer = ByteBuffer.allocate(SIZEOF_PACKET).order(
             ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.put(header.createPacket())
+        byteBuffer.put(header.createBytePacket())
         byteBuffer.put(version)
         byteBuffer.putInt(fmKeyId.keyId)
         val concatByte: Byte = (((reserved.toInt()) shl 2) or tunnelType.toInt()).toByte()
         byteBuffer.put(concatByte)
         return byteBuffer.array()
     }
+
 }
 
 class ConnPacketEncryptCustomSNonce(
     sender: Short,
     receiver: Short,
-    sNonceFirst: Int,
-    sNonceSecond: Int,
+    val sNonceFirst: Int,
+    val sNonceSecond: Int,
 ) : ConnectionMessageTypes {
-    private val header: ConnPacketHeader =
+    val header: ConnPacketHeader =
         ConnPacketHeader(MessageType.ENCRYPT_CUSTOM_SNONCE, sender, receiver)
     private val sNonce: Array<Int> = arrayOf(sNonceFirst, sNonceSecond)
 
@@ -89,15 +101,47 @@ class ConnPacketEncryptCustomSNonce(
             ConnPacketHeader.SIZEOF_PACKET + 8
     }
 
-    override fun createPacket(): ByteArray {
+    override fun createBytePacket(): ByteArray {
         val byteBuffer = ByteBuffer.allocate(ConnPacketEncryptCustomSNonce.SIZEOF_PACKET).order(
             ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.put(header.createPacket())
+        byteBuffer.put(header.createBytePacket())
         byteBuffer.putInt(sNonce[0])
         byteBuffer.putInt(sNonce[1])
         return byteBuffer.array()
     }
 }
+
+class ConnPacketEncryptCustomANonce(
+    sender: Short,
+    receiver: Short,
+    val aNonceFirst: Int,
+    val aNonceSecond: Int,
+) : ConnectionMessageTypes {
+    val header: ConnPacketHeader =
+        ConnPacketHeader(MessageType.ENCRYPT_CUSTOM_SNONCE, sender, receiver)
+    private val aNonce: Array<Int> = arrayOf(aNonceFirst, aNonceSecond)
+
+    companion object {
+        const val SIZEOF_PACKET = ConnPacketHeader.SIZEOF_PACKET + 8
+        fun readFromBytePacket(bytePacket: ByteArray): ConnPacketEncryptCustomANonce? {
+            if (bytePacket.size < SIZEOF_PACKET) return null
+            val byteBuffer = ByteBuffer.wrap(bytePacket).order(ByteOrder.LITTLE_ENDIAN)
+            byteBuffer.get() // skip header(1byte)
+            return ConnPacketEncryptCustomANonce(
+                byteBuffer.short, byteBuffer.short, byteBuffer.int, byteBuffer.int)
+        }
+    }
+
+    override fun createBytePacket(): ByteArray {
+        val byteBuffer = ByteBuffer.allocate(ConnPacketEncryptCustomSNonce.SIZEOF_PACKET).order(
+            ByteOrder.LITTLE_ENDIAN)
+        byteBuffer.put(header.createBytePacket())
+        byteBuffer.putInt(aNonce[0])
+        byteBuffer.putInt(aNonce[1])
+        return byteBuffer.array()
+    }
+}
+
 
 enum class MessageType(val typeValue: Byte) {
     INVALID(0), SPLIT_WRITE_CMD(16),  //Used if a WRITE_CMD message is split
@@ -136,4 +180,10 @@ enum class FmKeyId(val keyId: Int) {
     ZERO(0), NODE(1), NETWORK(2), BASE_USER(3), ORGANIZATION(4), RESTRAINED(5), USER_DERIVED_START(
         10),
     USER_DERIVED_END(Int.MAX_VALUE);
+
+    companion object {
+        fun getFmKeyId(keyId: Int): FmKeyId {
+            return values().find { it.keyId == keyId } ?: USER_DERIVED_END
+        }
+    }
 }

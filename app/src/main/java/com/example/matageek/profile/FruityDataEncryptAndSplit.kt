@@ -65,7 +65,7 @@ class FruityDataEncryptAndSplit(
 //        Log.d("FM",
 //            "Encrypting: " + plainPacket.contentToString() + "(" + packetLen + ")" + " with nonce: " + encryptionNonce[1])
         // create clear text
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN)
+        var byteBuffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.putInt(encryptionNonce[0])
         byteBuffer.putInt(encryptionNonce[1])
         val encryptNonceClearTextForKeyStream = byteBuffer.array()
@@ -73,7 +73,7 @@ class FruityDataEncryptAndSplit(
         val cipher = Cipher.getInstance("AES_128/ECB/NoPadding")
         cipher.init(Cipher.ENCRYPT_MODE, sessionEncryptionKey)
         val encryptKeyStream = cipher.doFinal(encryptNonceClearTextForKeyStream)
-        byteBuffer.clear()
+        byteBuffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(plainPacket, 0, packetLen)
         val packetZeroPadding = byteBuffer.array()
         val encryptPacket =
@@ -101,14 +101,14 @@ class FruityDataEncryptAndSplit(
 
         // create aNonce plain text to generate key stream for mic
         val encryptionNonce = encryptionNonceOrigin.toMutableList()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN)
+        var byteBuffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.putInt(encryptionNonce[0])
         byteBuffer.putInt(encryptionNonce[1] + 1)
         val plainTextForMicKeyStream = byteBuffer.array()
         val cipher = Cipher.getInstance("AES_128/ECB/NoPadding")
         cipher.init(Cipher.ENCRYPT_MODE, secretKey)
         val micKeyStream = cipher.doFinal(plainTextForMicKeyStream)
-        byteBuffer.clear()
+        byteBuffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(encryptedPacket, 0, packetLen)
         val zeroPaddingEncryptPacket = byteBuffer.array()
         val xoredMic: ByteArray =
