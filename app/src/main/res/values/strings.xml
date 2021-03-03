@@ -13,4 +13,6 @@
     <string name="scanner_guide_location_action">Enable</string>
     <string name="cluster_size">ClusterSize</string>
     <string name="node_activate">Activate</string>
+    <string name="status_connecting">Connecting...</string>
+    <string name="status_initializing">Initializing...</string>
 </resources>
