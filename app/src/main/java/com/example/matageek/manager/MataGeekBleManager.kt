@@ -142,6 +142,8 @@ class MataGeekBleManager(context: Context) :
         const val NODE_ID: Short = 32000
 
         /** MeshAccessService UUID */
+        val MESH_SERVICE_DATA_SERVICE_UUID16 =
+            UUID.fromString("0000FE12-0000-0000-0000-000000000000")
         val MA_UUID_SERVICE: UUID = UUID.fromString("00000001-acce-423c-93fd-0c07a0051858")
 
         /** RX characteristic UUID (use for send packet to peripheral) */
