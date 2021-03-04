@@ -5,6 +5,7 @@ import android.content.res.Resources
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
 import com.example.matageek.adapter.DiscoveredDevice
@@ -16,6 +17,7 @@ import no.nordicsemi.android.ble.observer.ConnectionObserver
 class DeviceConfigActivity : AppCompatActivity() {
     private lateinit var _bind: ActivityDeviceConfigBinding
     private val bind get() = _bind
+    private lateinit var deviceConfigViewModel: DeviceConfigViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,36 +30,10 @@ class DeviceConfigActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val deviceConfigViewModel: DeviceConfigViewModel by viewModels()
+        this.deviceConfigViewModel = deviceConfigViewModel
         deviceConfigViewModel.connect(discoveredDevice.device)
         deviceConfigViewModel.connectionState.observe(this, {
-            when (it.state) {
-                ConnectionState.State.CONNECTING -> {
-                    showConnectingStatus(R.string.status_connecting)
-                    Log.d("MATAG", "onCreate: CONNECTING")
-                }
-                ConnectionState.State.INITIALIZING -> {
-                    showConnectingStatus(R.string.status_initializing)
-                    Log.d("MATAG", "onCreate: INITIALIZING")
-                }
-                ConnectionState.State.READY -> {
-                    bind.deviceConfigGroup.visibility = View.VISIBLE
-                    bind.connectingGroup.visibility = View.GONE
-                    deviceConfigViewModel.startHandShake()
-                }
-                ConnectionState.State.DISCONNECTING -> {
-                    Log.d("MATAG", "onCreate: DISCONNECTING")
-                }
-                ConnectionState.State.DISCONNECTED -> {
-                    if ((it as ConnectionState.Disconnected).reason == ConnectionObserver.REASON_TERMINATE_PEER_USER) {
-                        // TODO delete history
-                        Intent(this, ScannerActivity::class.java).apply {
-                            startActivity(this)
-                        }
-                    }
-                    Log.d("MATAG",
-                        "onCreate: DISCONNECTING reason ${(it as ConnectionState.Disconnected).reason}")
-                }
-            }
+            onConnectionUpdated(it)
         })
         deviceConfigViewModel.deviceName.observe(this, {
             bind.deviceName.text = it
@@ -73,7 +49,55 @@ class DeviceConfigActivity : AppCompatActivity() {
         bind.activate.setOnClickListener {
             deviceConfigViewModel.sendGetStatusMessage()
         }
+    }
 
+    override fun onBackPressed() {
+        deviceConfigViewModel.disconnect()
+        super.onBackPressed()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            // pressed action bar back button
+            android.R.id.home -> {
+                deviceConfigViewModel.disconnect()
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun onConnectionUpdated(
+        connectionState
+        : ConnectionState,
+    ) {
+        when (connectionState.state) {
+            ConnectionState.State.CONNECTING -> {
+                showConnectingStatus(R.string.status_connecting)
+                Log.d("MATAG", "onCreate: CONNECTING")
+            }
+            ConnectionState.State.INITIALIZING -> {
+                showConnectingStatus(R.string.status_initializing)
+                Log.d("MATAG", "onCreate: INITIALIZING")
+            }
+            ConnectionState.State.READY -> {
+                bind.deviceConfigGroup.visibility = View.VISIBLE
+                bind.connectingGroup.visibility = View.GONE
+                deviceConfigViewModel.startHandShake()
+            }
+            ConnectionState.State.DISCONNECTING -> {
+                Log.d("MATAG", "onCreate: DISCONNECTING")
+            }
+            ConnectionState.State.DISCONNECTED -> {
+                if ((connectionState as ConnectionState.Disconnected).reason == ConnectionObserver.REASON_TERMINATE_PEER_USER) {
+                    // TODO delete history
+                    Intent(this, ScannerActivity::class.java).apply {
+                        startActivity(this)
+                    }
+                }
+                Log.d("MATAG",
+                    "onCreate: DISCONNECTING reason ${(connectionState as ConnectionState.Disconnected).reason}")
+            }
+        }
     }
 
     private fun showConnectingStatus(stringId: Int) {

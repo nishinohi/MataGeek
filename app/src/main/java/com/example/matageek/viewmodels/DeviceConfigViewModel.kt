@@ -2,9 +2,11 @@ package com.example.matageek.viewmodels
 
 import android.app.Application
 import android.bluetooth.BluetoothDevice
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.example.matageek.manager.MataGeekBleManager
+import no.nordicsemi.android.ble.callback.FailCallback
 import no.nordicsemi.android.ble.livedata.state.ConnectionState
 
 class DeviceConfigViewModel(application: Application) : AndroidViewModel(application) {
@@ -35,6 +37,11 @@ class DeviceConfigViewModel(application: Application) : AndroidViewModel(applica
 
     fun sendGetStatusMessage() {
         mataGeekBleManager.sendGetStatusMessage()
+    }
+
+    // TODO implement failed
+    fun disconnect() {
+        mataGeekBleManager.disconnect().enqueue()
     }
 
 
