@@ -27,13 +27,15 @@ abstract class MeshAccessDataCallback() :
     lateinit var encryptionKey: SecretKey
     lateinit var decryptionNonce: Array<Int>
     lateinit var decryptionKey: SecretKey
-    val networkKey: SecretKeySpec = SecretKeySpec(
+    private val networkKey: SecretKeySpec = SecretKeySpec(
         byteArrayOf(0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22,
             0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22), "AES"
     )
 
-    abstract fun sendPacket(data: Data, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?);
+    abstract fun sendPacket(data: Data, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?)
     abstract fun initialize()
+    abstract fun meshMessageReceivedHandler(packet: ByteArray)
+    abstract fun parsePacket(packet: ByteArray)
 
     override fun onDataSent(device: BluetoothDevice, data: Data) {
         Log.d("MATAG", "onDataSent: ${data.value}")
@@ -45,22 +47,11 @@ abstract class MeshAccessDataCallback() :
             packet = decryptPacket(packet, data.size(), decryptionNonce, decryptionKey) ?: return
             decryptionNonce[1] += 2
         }
-        when (val messageType = MessageType.getMessageType(packet[0])) {
-            MessageType.ENCRYPT_CUSTOM_ANONCE -> {
-                if (encryptionState.value != EncryptionState.ENCRYPTING) return
-                val connPacketEncryptCustomANonce =
-                    ConnPacketEncryptCustomANonce.readFromBytePacket(packet)
-                        ?: throw Exception("invalid message")
-                onANonceReceived(connPacketEncryptCustomANonce)
-            }
-            else -> {
-                Log.d("MATAG", "onDataReceived: Unknown Message $messageType")
-            }
-        }
+        parsePacket(packet)
         Log.d("MATAG", "onDataReceived: $data")
     }
 
-    private fun onANonceReceived(aNoncePacket: ConnPacketEncryptCustomANonce) {
+    fun onANonceReceived(aNoncePacket: ConnPacketEncryptCustomANonce) {
         partnerId = aNoncePacket.header.sender
         encryptionNonce = arrayOf(aNoncePacket.aNonceFirst, aNoncePacket.aNonceSecond)
         val plainTextForEncryptionKey = createPlainTextForSecretKey(MataGeekBleManager.NODE_ID,

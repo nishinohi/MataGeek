@@ -5,12 +5,15 @@ import android.bluetooth.BluetoothDevice
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.example.matageek.manager.MataGeekBleManager
-import com.example.matageek.profile.callback.EncryptionState
 import no.nordicsemi.android.ble.livedata.state.ConnectionState
 
 class DeviceConfigViewModel(application: Application) : AndroidViewModel(application) {
     private val mataGeekBleManager: MataGeekBleManager = MataGeekBleManager(application)
     val connectionState: LiveData<ConnectionState> = mataGeekBleManager.state
+    val deviceName = mataGeekBleManager.deviceName
+    val clusterSize = mataGeekBleManager.clusterSize
+    val battery = mataGeekBleManager.battery
+
     lateinit var device: BluetoothDevice
 
     fun connect(device: BluetoothDevice) {
@@ -29,5 +32,10 @@ class DeviceConfigViewModel(application: Application) : AndroidViewModel(applica
             mataGeekBleManager.startEncryptionHandshake()
         }
     }
+
+    fun sendGetStatusMessage() {
+        mataGeekBleManager.sendGetStatusMessage()
+    }
+
 
 }

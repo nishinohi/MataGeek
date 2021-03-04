@@ -39,22 +39,40 @@ class ConnPacketHeader(
 }
 
 class ConnPacketModule(
-    private val header: ConnPacketHeader,
-    private val moduleId: Byte,
-    private val requestHandle: Byte,
-    private val actionType: Byte,
+    messageType: MessageType,
+    sender: Short,
+    receiver: Short,
+    val moduleId: Byte,
+    val requestHandle: Byte,
+    val actionType: Byte,
 ) {
+    val header: ConnPacketHeader = ConnPacketHeader(messageType, sender, receiver)
+
     companion object {
         var SIZEOF_PACKET = ConnPacketHeader.SIZEOF_PACKET + 3
+        fun readFromBytePacket(bytePacket: ByteArray): ConnPacketModule? {
+            if (bytePacket.size < SIZEOF_PACKET) return null
+            val byteBuffer = ByteBuffer.wrap(bytePacket).order(ByteOrder.LITTLE_ENDIAN)
+            return ConnPacketModule(
+                MessageType.getMessageType(byteBuffer.get()), byteBuffer.short, byteBuffer.short,
+                byteBuffer.get(), byteBuffer.get(), byteBuffer.get()
+            )
+        }
     }
 }
 
 class PacketSplitHeader(
     val splitMessageType: MessageType,
-    val splitCounter: Int,
+    val splitCounter: Byte,
 ) {
     companion object {
         var SIZEOF_PACKET = 2
+        fun readFromBytePacket(bytePacket: ByteArray): PacketSplitHeader? {
+            if (bytePacket.size < SIZEOF_PACKET) return null
+            val byteBuffer = ByteBuffer.wrap(bytePacket).order(ByteOrder.LITTLE_ENDIAN)
+            return PacketSplitHeader(
+                MessageType.getMessageType(byteBuffer.get()), byteBuffer.get())
+        }
     }
 }
 

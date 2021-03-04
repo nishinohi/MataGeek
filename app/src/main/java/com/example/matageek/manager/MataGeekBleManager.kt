@@ -7,11 +7,14 @@ import android.bluetooth.BluetoothGattService
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
+import com.example.matageek.fruity.module.StatusReporterModule
+import com.example.matageek.fruity.types.*
 import com.example.matageek.profile.callback.MeshAccessDataCallback
 import com.example.matageek.profile.callback.EncryptionState
 import com.example.matageek.profile.FruityDataEncryptAndSplit
 import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.livedata.ObservableBleManager
+import java.lang.Exception
 import java.util.*
 import javax.crypto.SecretKey
 
@@ -20,6 +23,10 @@ class MataGeekBleManager(context: Context) :
 
     /** MeshAccessService Characteristics */
     private lateinit var meshAccessService: BluetoothGattService
+    private val statusReporterModule = StatusReporterModule()
+    val deviceName: MutableLiveData<String> = MutableLiveData()
+    val clusterSize: MutableLiveData<Short> = MutableLiveData()
+    val battery: MutableLiveData<Byte> = MutableLiveData()
 
     override fun getGattCallback(): BleManagerGattCallback {
         return MataGeekBleManagerGattCallback()
@@ -27,6 +34,8 @@ class MataGeekBleManager(context: Context) :
 
     private val meshAccessDataCallback: MeshAccessDataCallback =
         object : MeshAccessDataCallback() {
+            private val messageBuffer = mutableListOf<Byte>()
+
             override fun sendPacket(
                 data: Data, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?,
             ) {
@@ -41,10 +50,69 @@ class MataGeekBleManager(context: Context) :
                 enableNotifications(maTxCharacteristic).with(this).enqueue()
             }
 
+            override fun meshMessageReceivedHandler(packet: ByteArray) {
+                val modulePacketHeader = ConnPacketModule.readFromBytePacket(packet)
+                    ?: throw Exception("mesh Message Error")
+                if (modulePacketHeader.moduleId == FmTypes.ModuleId.STATUS_REPORTER_MODULE.id) {
+                    val status =
+                        StatusReporterModule.StatusReporterModuleStatusMessage.readFromBytePacket(
+                            packet.copyOfRange(ConnPacketModule.SIZEOF_PACKET, packet.size)
+                        )
+                    updateDeviceConfig(status)
+                    Log.d("MATAG", "meshMessageReceivedHandler: ${status.clusterSize}")
+                }
+            }
+
+            private fun updateDeviceConfig(statusMessage: StatusReporterModule.StatusReporterModuleStatusMessage) {
+                clusterSize.postValue(statusMessage.clusterSize)
+                battery.postValue(statusMessage.batteryInfo)
+            }
+
+            override fun parsePacket(packet: ByteArray) {
+                when (val messageType = MessageType.getMessageType(packet[0])) {
+                    MessageType.ENCRYPT_CUSTOM_ANONCE -> {
+                        if (encryptionState.value != EncryptionState.ENCRYPTING) return
+                        val connPacketEncryptCustomANonce =
+                            ConnPacketEncryptCustomANonce.readFromBytePacket(packet)
+                                ?: throw Exception("invalid message")
+                        onANonceReceived(connPacketEncryptCustomANonce)
+                    }
+                    MessageType.ENCRYPT_CUSTOM_DONE -> {
+                        sendGetStatusMessage()
+                    }
+                    MessageType.SPLIT_WRITE_CMD -> {
+                        val splitPacket = PacketSplitHeader.readFromBytePacket(packet)
+                            ?: throw Exception("invalid message")
+                        if (splitPacket.splitCounter.toInt() == 0) messageBuffer.clear()
+                        messageBuffer.addAll(packet.copyOfRange(PacketSplitHeader.SIZEOF_PACKET,
+                            packet.size).toList())
+                    }
+                    MessageType.SPLIT_WRITE_CMD_END -> {
+                        messageBuffer.addAll(packet.copyOfRange(PacketSplitHeader.SIZEOF_PACKET,
+                            packet.size).toList())
+                        parsePacket(messageBuffer.toByteArray())
+                    }
+                    MessageType.MODULE_ACTION_RESPONSE -> {
+                        meshMessageReceivedHandler(packet)
+                    }
+                    else -> {
+                        Log.d("MATAG", "onDataReceived: Unknown Message $messageType")
+                    }
+                }
+            }
+
         }
 
     fun startEncryptionHandshake() {
         meshAccessDataCallback.startEncryptionHandshake()
+    }
+
+    fun sendGetStatusMessage() {
+        writeCharacteristic(this.meshAccessDataCallback.maRxCharacteristic,
+            statusReporterModule.createGetStatusMessagePacket(meshAccessDataCallback.partnerId))
+            .split(FruityDataEncryptAndSplit(this.meshAccessDataCallback.encryptionNonce,
+                this.meshAccessDataCallback.encryptionKey)).with(this.meshAccessDataCallback)
+            .enqueue()
     }
 
     private inner class MataGeekBleManagerGattCallback : BleManagerGattCallback() {

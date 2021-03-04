@@ -59,6 +59,21 @@ class DeviceConfigActivity : AppCompatActivity() {
                 }
             }
         })
+        deviceConfigViewModel.deviceName.observe(this, {
+            bind.deviceName.text = it
+        })
+        deviceConfigViewModel.clusterSize.observe(this, {
+            bind.clusterSize.text = it.toString()
+        })
+        deviceConfigViewModel.battery.observe(this, {
+            bind.battery.text = "$it%"
+        })
+
+        // set Activate Button handler
+        bind.activate.setOnClickListener {
+            deviceConfigViewModel.sendGetStatusMessage()
+        }
+
     }
 
     private fun showConnectingStatus(stringId: Int) {
