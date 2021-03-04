@@ -156,6 +156,14 @@ class EncryptionTest : TestCase() {
                 override fun initialize() {
                 }
 
+                override fun meshMessageReceivedHandler(packet: ByteArray) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun parsePacket(packet: ByteArray) {
+                    TODO("Not yet implemented")
+                }
+
             }
         assert(temp.checkMicValidation(
             encryptedPacket, encryptNonce, encryptKey))
@@ -185,6 +193,14 @@ class EncryptionTest : TestCase() {
                 }
 
                 override fun initialize() {
+                }
+
+                override fun meshMessageReceivedHandler(packet: ByteArray) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun parsePacket(packet: ByteArray) {
+                    TODO("Not yet implemented")
                 }
 
             }
