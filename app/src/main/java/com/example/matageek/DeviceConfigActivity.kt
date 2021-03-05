@@ -8,13 +8,15 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
+import androidx.fragment.app.DialogFragment
 import com.example.matageek.adapter.DiscoveredDevice
 import com.example.matageek.databinding.ActivityDeviceConfigBinding
+import com.example.matageek.dialog.DialogDeviceNameEdit
 import com.example.matageek.viewmodels.DeviceConfigViewModel
 import no.nordicsemi.android.ble.livedata.state.ConnectionState
 import no.nordicsemi.android.ble.observer.ConnectionObserver
 
-class DeviceConfigActivity : AppCompatActivity() {
+class DeviceConfigActivity : AppCompatActivity(), DialogDeviceNameEdit.NoticeDeviceConfigListener {
     private lateinit var _bind: ActivityDeviceConfigBinding
     private val bind get() = _bind
     private lateinit var deviceConfigViewModel: DeviceConfigViewModel
@@ -48,6 +50,10 @@ class DeviceConfigActivity : AppCompatActivity() {
         // set Activate Button handler
         bind.activate.setOnClickListener {
             deviceConfigViewModel.sendGetStatusMessage()
+        }
+        bind.icDeviceNameEdit.setOnClickListener {
+            val deviceNameConfigDialog = DialogDeviceNameEdit()
+            deviceNameConfigDialog.show(supportFragmentManager, "test")
         }
     }
 
@@ -83,6 +89,7 @@ class DeviceConfigActivity : AppCompatActivity() {
                 bind.deviceConfigGroup.visibility = View.VISIBLE
                 bind.connectingGroup.visibility = View.GONE
                 deviceConfigViewModel.startHandShake()
+                deviceConfigViewModel.loadDeviceName()
             }
             ConnectionState.State.DISCONNECTING -> {
                 Log.d("MATAG", "onCreate: DISCONNECTING")
@@ -108,5 +115,13 @@ class DeviceConfigActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_DEVICE: String = "com.matageek.EXTRA_DEVICE"
+    }
+
+    override fun onDialogPositiveClick(dialog: DialogFragment, deviceName: String) {
+        if (deviceName.isEmpty()) return
+        deviceConfigViewModel.setDeviceName(deviceName)
+    }
+
+    override fun onDialogNegativeClick(dialog: DialogFragment) {
     }
 }

@@ -24,7 +24,6 @@ class MataGeekBleManager(context: Context) :
     /** MeshAccessService Characteristics */
     private lateinit var meshAccessService: BluetoothGattService
     private val statusReporterModule = StatusReporterModule()
-    val deviceName: MutableLiveData<String> = MutableLiveData()
     val clusterSize: MutableLiveData<Short> = MutableLiveData()
     val battery: MutableLiveData<Byte> = MutableLiveData()
 

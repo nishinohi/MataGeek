@@ -15,4 +15,7 @@
     <string name="node_activate">Activate</string>
     <string name="status_connecting">Connecting...</string>
     <string name="status_initializing">Initializing...</string>
+    <string name="preference_device_name_key">preference_device_name_key</string>
+    <string name="default_device_name">Unknown device</string>
+    <string name="device_config_edit_title">Edit Device Name</string>
 </resources>
