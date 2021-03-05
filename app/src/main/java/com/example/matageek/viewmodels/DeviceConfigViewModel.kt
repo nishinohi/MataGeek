@@ -31,6 +31,7 @@ class DeviceConfigViewModel(application: Application) : AndroidViewModel(applica
             application.getString(R.string.default_device_name)))
     }
 
+    // TODO replace magic number
     private fun reconnect(device: BluetoothDevice) {
         mataGeekBleManager.connect(device).retry(3, 100)
             .useAutoConnect(false)

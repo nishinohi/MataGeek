@@ -1,6 +1,5 @@
 package com.example.matageek.manager
 
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
@@ -14,9 +13,9 @@ import com.example.matageek.profile.callback.EncryptionState
 import com.example.matageek.profile.FruityDataEncryptAndSplit
 import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.livedata.ObservableBleManager
-import java.lang.Exception
 import java.util.*
 import javax.crypto.SecretKey
+import kotlin.Exception
 
 class MataGeekBleManager(context: Context) :
     ObservableBleManager(context) {
@@ -94,13 +93,22 @@ class MataGeekBleManager(context: Context) :
                     MessageType.MODULE_ACTION_RESPONSE -> {
                         meshMessageReceivedHandler(packet)
                     }
+                    MessageType.CLUSTER_INFO_UPDATE -> {
+                        val clusterInfoUpdate =
+                            ConnPacketClusterInfoUpdate.readFromBytePacket(packet)
+                                ?: throw Exception("invalid message")
+                        updateClusterInfo(clusterInfoUpdate)
+                    }
                     else -> {
                         Log.d("MATAG", "onDataReceived: Unknown Message $messageType")
                     }
                 }
             }
-
         }
+
+    fun updateClusterInfo(clusterInfoUpdate: ConnPacketClusterInfoUpdate) {
+        clusterSize.postValue(clusterInfoUpdate.clusterSizeChange)
+    }
 
     fun startEncryptionHandshake() {
         meshAccessDataCallback.startEncryptionHandshake()

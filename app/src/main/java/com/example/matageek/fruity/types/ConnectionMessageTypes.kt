@@ -144,7 +144,7 @@ class ConnPacketEncryptCustomANonce(
         fun readFromBytePacket(bytePacket: ByteArray): ConnPacketEncryptCustomANonce? {
             if (bytePacket.size < SIZEOF_PACKET) return null
             val byteBuffer = ByteBuffer.wrap(bytePacket).order(ByteOrder.LITTLE_ENDIAN)
-            byteBuffer.get() // skip header(1byte)
+            byteBuffer.get() // skip messageType
             return ConnPacketEncryptCustomANonce(
                 byteBuffer.short, byteBuffer.short, byteBuffer.int, byteBuffer.int)
         }
@@ -157,6 +157,30 @@ class ConnPacketEncryptCustomANonce(
         byteBuffer.putInt(aNonce[0])
         byteBuffer.putInt(aNonce[1])
         return byteBuffer.array()
+    }
+}
+
+class ConnPacketClusterInfoUpdate(
+    sender: Short,
+    receiver: Short,
+    val deprecated: Int,
+    val clusterSizeChange: Short,
+    val hopsToSink: Short,
+    val connectionMasterBitHandover: Byte,
+) {
+    val header = ConnPacketHeader(MessageType.CLUSTER_INFO_UPDATE, sender, receiver)
+
+    // TODO create Unit test
+    companion object {
+        const val SIZEOF_PACKET = ConnPacketHeader.SIZEOF_PACKET + 9
+        fun readFromBytePacket(bytePacket: ByteArray): ConnPacketClusterInfoUpdate? {
+            if (bytePacket.size < SIZEOF_PACKET) return null
+            val byteBuffer = ByteBuffer.wrap(bytePacket).order(ByteOrder.LITTLE_ENDIAN)
+            byteBuffer.get() // skip messageType
+            return ConnPacketClusterInfoUpdate(
+                byteBuffer.short, byteBuffer.short, byteBuffer.int, byteBuffer.short,
+                byteBuffer.short, byteBuffer.get())
+        }
     }
 }
 
