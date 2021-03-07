@@ -7,15 +7,15 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.matageek.R
-import com.example.matageek.manager.MataGeekBleManager
+import com.example.matageek.manager.MeshAccessManager
 import no.nordicsemi.android.ble.livedata.state.ConnectionState
 
 class DeviceConfigViewModel(application: Application) : AndroidViewModel(application) {
-    private val mataGeekBleManager: MataGeekBleManager = MataGeekBleManager(application)
-    val connectionState: LiveData<ConnectionState> = mataGeekBleManager.state
+    private val meshAccessManager: MeshAccessManager = MeshAccessManager(application)
+    val connectionState: LiveData<ConnectionState> = meshAccessManager.state
     val deviceName: MutableLiveData<String> = MutableLiveData()
-    val clusterSize = mataGeekBleManager.clusterSize
-    val battery = mataGeekBleManager.battery
+    val clusterSize = meshAccessManager.clusterSize
+    val battery = meshAccessManager.batteryInfo
     private val deviceNamePreferences =
         application.getSharedPreferences(application.getString(R.string.preference_device_name_key),
             Context.MODE_PRIVATE)
@@ -33,14 +33,14 @@ class DeviceConfigViewModel(application: Application) : AndroidViewModel(applica
 
     // TODO replace magic number
     private fun reconnect(device: BluetoothDevice) {
-        mataGeekBleManager.connect(device).retry(3, 100)
+        meshAccessManager.connect(device).retry(3, 100)
             .useAutoConnect(false)
             .enqueue()
     }
 
     fun startHandShake() {
         if (connectionState.value == ConnectionState.Ready) {
-            mataGeekBleManager.startEncryptionHandshake()
+            meshAccessManager.startEncryptionHandshake()
         }
     }
 
@@ -53,12 +53,12 @@ class DeviceConfigViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun sendGetStatusMessage() {
-        mataGeekBleManager.sendGetStatusMessage()
+        meshAccessManager.sendGetStatusMessage()
     }
 
     // TODO implement failed
     fun disconnect() {
-        mataGeekBleManager.disconnect().enqueue()
+        meshAccessManager.disconnect().enqueue()
     }
 
     fun loadDeviceName() {

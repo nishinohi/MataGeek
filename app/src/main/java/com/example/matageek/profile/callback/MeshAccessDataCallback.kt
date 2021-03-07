@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.matageek.fruity.types.*
-import com.example.matageek.manager.MataGeekBleManager
+import com.example.matageek.manager.MeshAccessManager
 import com.example.matageek.util.Util
 import no.nordicsemi.android.ble.callback.DataReceivedCallback
 import no.nordicsemi.android.ble.callback.DataSentCallback
@@ -34,7 +34,6 @@ abstract class MeshAccessDataCallback() :
 
     abstract fun sendPacket(data: Data, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?)
     abstract fun initialize()
-    abstract fun meshMessageReceivedHandler(packet: ByteArray)
     abstract fun parsePacket(packet: ByteArray)
 
     override fun onDataSent(device: BluetoothDevice, data: Data) {
@@ -54,7 +53,7 @@ abstract class MeshAccessDataCallback() :
     fun onANonceReceived(aNoncePacket: ConnPacketEncryptCustomANonce) {
         partnerId = aNoncePacket.header.sender
         encryptionNonce = arrayOf(aNoncePacket.aNonceFirst, aNoncePacket.aNonceSecond)
-        val plainTextForEncryptionKey = createPlainTextForSecretKey(MataGeekBleManager.NODE_ID,
+        val plainTextForEncryptionKey = createPlainTextForSecretKey(MeshAccessManager.NODE_ID,
             encryptionNonce)
         Log.d("MATAG", "encryptionNonce[0]: ${encryptionNonce[0]}")
         Log.d("MATAG", "encryptionNonce[1]: ${encryptionNonce[1]}")
@@ -63,10 +62,10 @@ abstract class MeshAccessDataCallback() :
         decryptionNonce = arrayOf(secureRandom.nextInt(), secureRandom.nextInt())
         Log.d("MATAG", "decryptionNonce[0]: ${decryptionNonce[0]}")
         Log.d("MATAG", "decryptionNonce[1]: ${decryptionNonce[1]}")
-        val plainTextForDecryptionKey = createPlainTextForSecretKey(MataGeekBleManager.NODE_ID,
+        val plainTextForDecryptionKey = createPlainTextForSecretKey(MeshAccessManager.NODE_ID,
             decryptionNonce)
         decryptionKey = generateSecretKey(plainTextForDecryptionKey, networkKey)
-        val sNoncePacket = ConnPacketEncryptCustomSNonce(MataGeekBleManager.NODE_ID,
+        val sNoncePacket = ConnPacketEncryptCustomSNonce(MeshAccessManager.NODE_ID,
             partnerId, decryptionNonce[0], decryptionNonce[1])
         encryptionState.postValue(EncryptionState.ENCRYPTED)
         sendPacket(Data(sNoncePacket.createBytePacket()), encryptionNonce, encryptionKey)
@@ -76,7 +75,7 @@ abstract class MeshAccessDataCallback() :
     fun startEncryptionHandshake() {
         encryptionState.postValue(EncryptionState.ENCRYPTING)
         val connPacketEncryptCustomStart =
-            ConnPacketEncryptCustomStart(MataGeekBleManager.NODE_ID, 0, 1, FmKeyId.NETWORK, 1, 0)
+            ConnPacketEncryptCustomStart(MeshAccessManager.NODE_ID, 0, 1, FmKeyId.NETWORK, 1, 0)
         sendPacket(Data(connPacketEncryptCustomStart.createBytePacket()),
             null, null)
     }

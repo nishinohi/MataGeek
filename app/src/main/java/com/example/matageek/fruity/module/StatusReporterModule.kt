@@ -1,13 +1,28 @@
 package com.example.matageek.fruity.module
 
-import com.example.matageek.fruity.types.ConnPacketHeader
 import com.example.matageek.fruity.types.ConnPacketModule
 import com.example.matageek.fruity.types.FmTypes
 import com.example.matageek.fruity.types.MessageType
+import com.example.matageek.manager.DeviceInfo
+import java.lang.Exception
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class StatusReporterModule() : Module("status", FmTypes.ModuleId.STATUS_REPORTER_MODULE.id) {
+class StatusReporterModule : Module("status", FmTypes.ModuleId.STATUS_REPORTER_MODULE.id) {
+
+    override fun actionResponseMessageReceivedHandler(packet: ByteArray) {
+        val modulePacket =
+            ConnPacketModule.readFromBytePacket(packet) ?: throw Exception("invalid Message")
+        when (modulePacket.actionType) {
+            StatusModuleActionResponseMessages.STATUS.type -> {
+                val statusMessage =
+                    StatusReporterModuleStatusMessage.readFromBytePacket(packet.copyOfRange(
+                        ConnPacketModule.SIZEOF_PACKET, packet.size))
+                        ?: throw Exception("invalid Message")
+                notifyObserver(DeviceInfo(statusMessage.clusterSize, statusMessage.batteryInfo))
+            }
+        }
+    }
 
     fun createGetStatusMessagePacket(receiver: Short): ByteArray {
         return createSendModuleActionMessagePacket(MessageType.MODULE_TRIGGER_ACTION, receiver, 0,
@@ -20,8 +35,9 @@ class StatusReporterModule() : Module("status", FmTypes.ModuleId.STATUS_REPORTER
         val initializedByGateway: Byte,
     ) {
         companion object {
-            const val SIZEOF_PACKET = 9
-            fun readFromBytePacket(bytePacket: ByteArray): StatusReporterModuleStatusMessage {
+            private const val SIZEOF_PACKET = 9
+            fun readFromBytePacket(bytePacket: ByteArray): StatusReporterModuleStatusMessage? {
+                if (bytePacket.size < SIZEOF_PACKET) return null
                 val byteBuffer = ByteBuffer.wrap(bytePacket).order(ByteOrder.LITTLE_ENDIAN)
                 return StatusReporterModuleStatusMessage(byteBuffer.short,
                     byteBuffer.short, byteBuffer.get(), byteBuffer.get(), byteBuffer.get(),
@@ -60,6 +76,6 @@ class StatusReporterModule() : Module("status", FmTypes.ModuleId.STATUS_REPORTER
         REBOOT_REASON(8),
         DEVICE_INFO_V2(10),
         ALL_CONNECTIONS_VERBOSE(12),
-    };
+    }
 
 }

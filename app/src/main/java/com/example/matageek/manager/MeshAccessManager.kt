@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothGattService
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
+import com.example.matageek.fruity.module.Module
 import com.example.matageek.fruity.module.StatusReporterModule
 import com.example.matageek.fruity.types.*
 import com.example.matageek.profile.callback.MeshAccessDataCallback
@@ -17,14 +18,19 @@ import java.util.*
 import javax.crypto.SecretKey
 import kotlin.Exception
 
-class MataGeekBleManager(context: Context) :
-    ObservableBleManager(context) {
+class MeshAccessManager(context: Context) :
+    ObservableBleManager(context), MeshAccessObserver {
 
     /** MeshAccessService Characteristics */
     private lateinit var meshAccessService: BluetoothGattService
-    private val statusReporterModule = StatusReporterModule()
+    private val modules: MutableList<Module> = mutableListOf()
     val clusterSize: MutableLiveData<Short> = MutableLiveData()
-    val battery: MutableLiveData<Byte> = MutableLiveData()
+    val batteryInfo: MutableLiveData<Byte> = MutableLiveData()
+
+    init {
+        modules.add(StatusReporterModule())
+        modules.forEach { it.addObserver(this) }
+    }
 
     override fun getGattCallback(): BleManagerGattCallback {
         return MataGeekBleManagerGattCallback()
@@ -46,24 +52,6 @@ class MataGeekBleManager(context: Context) :
                 encryptionState.postValue(EncryptionState.NOT_ENCRYPTED)
                 setNotificationCallback(maTxCharacteristic).with(this)
                 enableNotifications(maTxCharacteristic).with(this).enqueue()
-            }
-
-            override fun meshMessageReceivedHandler(packet: ByteArray) {
-                val modulePacketHeader = ConnPacketModule.readFromBytePacket(packet)
-                    ?: throw Exception("mesh Message Error")
-                if (modulePacketHeader.moduleId == FmTypes.ModuleId.STATUS_REPORTER_MODULE.id) {
-                    val status =
-                        StatusReporterModule.StatusReporterModuleStatusMessage.readFromBytePacket(
-                            packet.copyOfRange(ConnPacketModule.SIZEOF_PACKET, packet.size)
-                        )
-                    updateDeviceConfig(status)
-                    Log.d("MATAG", "meshMessageReceivedHandler: ${status.clusterSize}")
-                }
-            }
-
-            private fun updateDeviceConfig(statusMessage: StatusReporterModule.StatusReporterModuleStatusMessage) {
-                clusterSize.postValue(statusMessage.clusterSize)
-                battery.postValue(statusMessage.batteryInfo)
             }
 
             override fun parsePacket(packet: ByteArray) {
@@ -91,13 +79,13 @@ class MataGeekBleManager(context: Context) :
                         parsePacket(messageBuffer.toByteArray())
                     }
                     MessageType.MODULE_ACTION_RESPONSE -> {
-                        meshMessageReceivedHandler(packet)
+                        moduleMessageReceivedHandler(packet)
                     }
                     MessageType.CLUSTER_INFO_UPDATE -> {
                         val clusterInfoUpdate =
                             ConnPacketClusterInfoUpdate.readFromBytePacket(packet)
                                 ?: throw Exception("invalid message")
-                        updateClusterInfo(clusterInfoUpdate)
+                        update(DeviceInfo(clusterInfoUpdate.clusterSizeChange, null))
                     }
                     else -> {
                         Log.d("MATAG", "onDataReceived: Unknown Message $messageType")
@@ -106,8 +94,16 @@ class MataGeekBleManager(context: Context) :
             }
         }
 
-    fun updateClusterInfo(clusterInfoUpdate: ConnPacketClusterInfoUpdate) {
-        clusterSize.postValue(clusterInfoUpdate.clusterSizeChange)
+    fun moduleMessageReceivedHandler(packet: ByteArray) {
+        val modulePacketHeader = ConnPacketModule.readFromBytePacket(packet)
+            ?: throw Exception("mesh Message Error")
+        modules.find { modulePacketHeader.moduleId == it.moduleId }
+            ?.actionResponseMessageReceivedHandler(packet)
+    }
+
+    override fun update(deviceInfo: DeviceInfo) {
+        deviceInfo.clusterSize?.let { this.clusterSize.postValue(it) }
+        deviceInfo.batteryInfo?.let { this.batteryInfo.postValue(it) }
     }
 
     fun startEncryptionHandshake() {
@@ -115,8 +111,13 @@ class MataGeekBleManager(context: Context) :
     }
 
     fun sendGetStatusMessage() {
+        val statusReporterModule =
+            modules.find { it.moduleId == FmTypes.ModuleId.STATUS_REPORTER_MODULE.id }
+                ?: throw Exception("Module not exist")
+
         writeCharacteristic(this.meshAccessDataCallback.maRxCharacteristic,
-            statusReporterModule.createGetStatusMessagePacket(meshAccessDataCallback.partnerId))
+            (statusReporterModule as StatusReporterModule).createGetStatusMessagePacket(
+                meshAccessDataCallback.partnerId))
             .split(FruityDataEncryptAndSplit(this.meshAccessDataCallback.encryptionNonce,
                 this.meshAccessDataCallback.encryptionKey)).with(this.meshAccessDataCallback)
             .enqueue()
@@ -149,7 +150,7 @@ class MataGeekBleManager(context: Context) :
         const val NODE_ID: Short = 32000
 
         /** MeshAccessService UUID */
-        val MESH_SERVICE_DATA_SERVICE_UUID16 =
+        val MESH_SERVICE_DATA_SERVICE_UUID16: UUID =
             UUID.fromString("0000FE12-0000-0000-0000-000000000000")
         val MA_UUID_SERVICE: UUID = UUID.fromString("00000001-acce-423c-93fd-0c07a0051858")
 
