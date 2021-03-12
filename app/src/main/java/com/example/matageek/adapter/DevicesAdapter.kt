@@ -1,7 +1,5 @@
 package com.example.matageek.adapter
 
-import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
