@@ -5,10 +5,6 @@ import java.nio.ByteOrder
 
 interface ConnectionMessageTypes {
     fun createBytePacket(): ByteArray
-
-    companion object {
-        const val SIS = 0
-    }
 }
 
 class ConnPacketHeader(

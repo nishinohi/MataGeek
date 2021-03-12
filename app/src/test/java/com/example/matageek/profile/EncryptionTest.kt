@@ -149,15 +149,13 @@ class EncryptionTest : TestCase() {
         val temp: MeshAccessDataCallback =
             object : MeshAccessDataCallback() {
                 override fun sendPacket(
-                    data: Data, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?,
+                    data: ByteArray,
+                    encryptionNonce: Array<Int>?,
+                    encryptionKey: SecretKey?
                 ) {
                 }
 
                 override fun initialize() {
-                }
-
-                override fun meshMessageReceivedHandler(packet: ByteArray) {
-                    TODO("Not yet implemented")
                 }
 
                 override fun parsePacket(packet: ByteArray) {
@@ -188,15 +186,13 @@ class EncryptionTest : TestCase() {
         val temp: MeshAccessDataCallback =
             object : MeshAccessDataCallback() {
                 override fun sendPacket(
-                    data: Data, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?,
+                    data: ByteArray,
+                    encryptionNonce: Array<Int>?,
+                    encryptionKey: SecretKey?
                 ) {
                 }
 
                 override fun initialize() {
-                }
-
-                override fun meshMessageReceivedHandler(packet: ByteArray) {
-                    TODO("Not yet implemented")
                 }
 
                 override fun parsePacket(packet: ByteArray) {
