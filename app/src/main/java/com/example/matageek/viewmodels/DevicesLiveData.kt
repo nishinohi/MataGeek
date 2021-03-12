@@ -15,7 +15,6 @@ class DevicesLiveData(
     private val discoveredDevices: MutableList<DiscoveredDevice> = mutableListOf()
     var filteredDevices: MutableList<DiscoveredDevice> = mutableListOf()
 
-    // TODO
     fun applyFilter(): Boolean {
         filteredDevices = discoveredDevices.filter { discoveredDevice ->
             this.filterNearby(discoveredDevice.lastScanResult, FILTER_RSSI) &&

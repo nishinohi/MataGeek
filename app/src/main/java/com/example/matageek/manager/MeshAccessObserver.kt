@@ -1,7 +1,5 @@
 package com.example.matageek.manager
 
-import android.app.ApplicationErrorReport
-
 interface MeshAccessObserver {
     abstract fun update(deviceInfo: DeviceInfo)
 }

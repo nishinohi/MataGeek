@@ -5,6 +5,7 @@ import org.hamcrest.CoreMatchers.`is`
 
 import org.junit.Assert.*
 import org.junit.Test
+import java.lang.Exception
 
 class MataGeekModuleTest : TestCase() {
     @Test
@@ -13,7 +14,7 @@ class MataGeekModuleTest : TestCase() {
             0x03, 0x00, 0x64, 0x00, 0x10, 0x03, 0x02, 0x01, 0x05
         )
         val message =
-            StatusReporterModule.StatusReporterModuleStatusMessage.readFromBytePacket(packet)
+            StatusReporterModule.StatusReporterModuleStatusMessage.readFromBytePacket(packet)?:throw Exception("invalid")
         assertThat(message.clusterSize, `is`(3))
         assertThat(message.inConnectionPartner, `is`(100))
         assertThat(message.inConnectionRSSI, `is`(16))
