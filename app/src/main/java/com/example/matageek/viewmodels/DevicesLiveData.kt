@@ -4,6 +4,7 @@ import android.bluetooth.le.ScanResult
 import android.os.ParcelUuid
 import androidx.lifecycle.LiveData
 import com.example.matageek.adapter.DiscoveredDevice
+import com.example.matageek.fruity.types.AdvStructureMeshAccessServiceData
 import com.example.matageek.manager.MeshAccessManager
 
 class DevicesLiveData(
@@ -12,7 +13,7 @@ class DevicesLiveData(
 ) :
     LiveData<MutableList<DiscoveredDevice>>() {
 
-    private val discoveredDevices: MutableList<DiscoveredDevice> = mutableListOf()
+    private var discoveredDevices: MutableList<DiscoveredDevice> = mutableListOf()
     var filteredDevices: MutableList<DiscoveredDevice> = mutableListOf()
 
     fun applyFilter(): Boolean {
@@ -26,14 +27,22 @@ class DevicesLiveData(
 
     @Synchronized
     fun deviceDiscovered(scanResult: ScanResult) {
-        val existedDevice: List<DiscoveredDevice> =
-            discoveredDevices.filter { discoveredDevice ->
-                discoveredDevice.device.address.equals(scanResult.device.address)
-            }
-        val newDevice: DiscoveredDevice =
-            if (existedDevice.isEmpty()) DiscoveredDevice(scanResult) else existedDevice[0]
-        if (existedDevice.isEmpty()) discoveredDevices.add(newDevice)
-        newDevice.update(scanResult)
+        scanResult.scanRecord.let {
+            if (it == null ||
+                !AdvStructureMeshAccessServiceData.isMeshAccessServiceAdvertise(it)
+            ) return
+        }
+
+        val newDevice = DiscoveredDevice(scanResult)
+        if (discoveredDevices.size == 0 ||
+            discoveredDevices.find { it.device.address == scanResult.device.address } == null
+        ) {
+            discoveredDevices.add(newDevice)
+            return
+        }
+        discoveredDevices = discoveredDevices.map {
+            if (it.device.address == scanResult.device.address) newDevice else it
+        }.toMutableList()
     }
 
     private fun filterServiceUuid(scanResult: ScanResult): Boolean {

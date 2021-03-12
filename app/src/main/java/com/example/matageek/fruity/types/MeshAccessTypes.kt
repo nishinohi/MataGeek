@@ -1,5 +1,6 @@
 package com.example.matageek.fruity.types
 
+import android.bluetooth.le.ScanRecord
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -80,5 +81,26 @@ class AdvStructureMeshAccessServiceData {
 
     companion object {
         const val SIZE_OF_PACKET = 24
+
+        fun isMeshAccessServiceAdvertise(scanRecord: ScanRecord): Boolean {
+            val meshAdv = scanRecord.bytes ?: return false
+            if (meshAdv.size < AdvertisingMessageTypes.ADV_PACKET_MAX_SIZE) return false
+
+            // check adv data sequence
+            if (meshAdv[0].toInt() != AdvStructureFlags.SIZE_OF_PACKET - 1) return false
+            if (meshAdv[AdvStructureFlags.SIZE_OF_PACKET].toInt() !=
+                AdvStructureUUID16.SIZE_OF_PACKET - 1
+            ) return false
+            if (meshAdv[AdvStructureFlags.SIZE_OF_PACKET + AdvStructureUUID16.SIZE_OF_PACKET]
+                    .toInt() != AdvStructureMeshAccessServiceData.SIZE_OF_PACKET - 1
+            ) return false
+
+            val advStructureMeshAccessServiceData =
+                AdvStructureMeshAccessServiceData(meshAdv.copyOfRange(AdvStructureFlags.SIZE_OF_PACKET
+                        + AdvStructureUUID16.SIZE_OF_PACKET,
+                    AdvStructureFlags.SIZE_OF_PACKET + AdvStructureUUID16.SIZE_OF_PACKET +
+                            AdvStructureMeshAccessServiceData.SIZE_OF_PACKET))
+            return advStructureMeshAccessServiceData.data.messageType == ServiceDataMessageType.MESH_ACCESS.type
+        }
     }
 }

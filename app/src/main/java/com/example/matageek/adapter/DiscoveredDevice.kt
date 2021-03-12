@@ -6,7 +6,6 @@ import android.bluetooth.le.ScanResult
 import android.os.Parcel
 import android.os.Parcelable
 import com.example.matageek.fruity.types.*
-import java.nio.ByteBuffer
 
 class DiscoveredDevice(var lastScanResult: ScanResult) : Parcelable {
     val device: BluetoothDevice get() = lastScanResult.device
@@ -29,22 +28,13 @@ class DiscoveredDevice(var lastScanResult: ScanResult) : Parcelable {
         lastScanResult = scanResult
         previousRssi = rssi
         highestRssi = if (highestRssi > rssi) highestRssi else rssi
-        scanResult.scanRecord?.let { gapAdvertisementReportCheck(it) }
+        scanResult.scanRecord?.let { checkEnrolledFromMeshAccessAdvertise(it) }
     }
 
-    private fun gapAdvertisementReportCheck(scanRecord: ScanRecord) {
+    private fun checkEnrolledFromMeshAccessAdvertise(scanRecord: ScanRecord) {
+        if (!AdvStructureMeshAccessServiceData.isMeshAccessServiceAdvertise(scanRecord)) return
+
         val meshAdv = scanRecord.bytes ?: return
-        if (meshAdv.size < AdvertisingMessageTypes.ADV_PACKET_MAX_SIZE) return
-
-        // check adv data sequence
-        if (meshAdv[0].toInt() != AdvStructureFlags.SIZE_OF_PACKET - 1) return
-        if (meshAdv[AdvStructureFlags.SIZE_OF_PACKET].toInt() !=
-            AdvStructureUUID16.SIZE_OF_PACKET - 1
-        ) return
-        if (meshAdv[AdvStructureFlags.SIZE_OF_PACKET + AdvStructureUUID16.SIZE_OF_PACKET]
-                .toInt() != AdvStructureMeshAccessServiceData.SIZE_OF_PACKET - 1
-        ) return
-
         val advStructureMeshAccessServiceData =
             AdvStructureMeshAccessServiceData(meshAdv.copyOfRange(AdvStructureFlags.SIZE_OF_PACKET
                     + AdvStructureUUID16.SIZE_OF_PACKET,
@@ -82,6 +72,7 @@ class DiscoveredDevice(var lastScanResult: ScanResult) : Parcelable {
         override fun newArray(size: Int): Array<DiscoveredDevice?> {
             return arrayOfNulls(size)
         }
+
     }
 
 
