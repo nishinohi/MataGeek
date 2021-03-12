@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothGattService
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
+import com.example.matageek.fruity.module.EnrollmentModule
 import com.example.matageek.fruity.module.Module
 import com.example.matageek.fruity.module.StatusReporterModule
 import com.example.matageek.fruity.types.*
@@ -29,6 +30,7 @@ class MeshAccessManager(context: Context) :
 
     init {
         modules.add(StatusReporterModule())
+        modules.add(EnrollmentModule())
         modules.forEach { it.addObserver(this) }
     }
 
@@ -41,9 +43,9 @@ class MeshAccessManager(context: Context) :
             private val messageBuffer = mutableListOf<Byte>()
 
             override fun sendPacket(
-                data: Data, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?,
+                data: ByteArray, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?,
             ) {
-                writeCharacteristic(this.maRxCharacteristic, data)
+                writeCharacteristic(this.maRxCharacteristic, Data(data))
                     .split(FruityDataEncryptAndSplit(encryptionNonce, encryptionKey)).with(this)
                     .enqueue()
             }
@@ -115,12 +117,21 @@ class MeshAccessManager(context: Context) :
             modules.find { it.moduleId == FmTypes.ModuleId.STATUS_REPORTER_MODULE.id }
                 ?: throw Exception("Module not exist")
 
-        writeCharacteristic(this.meshAccessDataCallback.maRxCharacteristic,
+        meshAccessDataCallback.sendPacket(
             (statusReporterModule as StatusReporterModule).createGetStatusMessagePacket(
-                meshAccessDataCallback.partnerId))
-            .split(FruityDataEncryptAndSplit(this.meshAccessDataCallback.encryptionNonce,
-                this.meshAccessDataCallback.encryptionKey)).with(this.meshAccessDataCallback)
-            .enqueue()
+                meshAccessDataCallback.partnerId),
+            meshAccessDataCallback.encryptionNonce, meshAccessDataCallback.encryptionKey)
+    }
+
+    fun sendEnrollmentBroadcastAppStart() {
+        val enrollModule =
+            modules.find { it.moduleId == FmTypes.ModuleId.ENROLLMENT_MODULE.id }
+                ?: throw Exception("Module not exist")
+
+        meshAccessDataCallback.sendPacket(
+            (enrollModule as EnrollmentModule).createEnrollmentBroadcastAppStartMessagePacket(
+                meshAccessDataCallback.partnerId), meshAccessDataCallback.encryptionNonce,
+            meshAccessDataCallback.encryptionKey)
     }
 
     private inner class MataGeekBleManagerGattCallback : BleManagerGattCallback() {

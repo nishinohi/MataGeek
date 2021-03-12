@@ -49,7 +49,7 @@ class DeviceConfigActivity : AppCompatActivity(), DialogDeviceNameEdit.NoticeDev
 
         // set Activate Button handler
         bind.activate.setOnClickListener {
-            deviceConfigViewModel.sendGetStatusMessage()
+            deviceConfigViewModel.sendEnrollmentBroadcastAppStart()
         }
         bind.icDeviceNameEdit.setOnClickListener {
             val deviceNameConfigDialog = DialogDeviceNameEdit()

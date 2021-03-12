@@ -52,10 +52,6 @@ class DeviceConfigViewModel(application: Application) : AndroidViewModel(applica
         this.deviceName.postValue(deviceName)
     }
 
-    fun sendGetStatusMessage() {
-        meshAccessManager.sendGetStatusMessage()
-    }
-
     // TODO implement failed
     fun disconnect() {
         meshAccessManager.disconnect().enqueue()
@@ -63,6 +59,10 @@ class DeviceConfigViewModel(application: Application) : AndroidViewModel(applica
 
     fun loadDeviceName() {
         deviceName.postValue(deviceNamePreferences.getString(device.address, "unknown node"))
+    }
+
+    fun sendEnrollmentBroadcastAppStart() {
+        meshAccessManager.sendEnrollmentBroadcastAppStart()
     }
 
 

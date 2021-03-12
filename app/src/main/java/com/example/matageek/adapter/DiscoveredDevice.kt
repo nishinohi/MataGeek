@@ -1,13 +1,17 @@
 package com.example.matageek.adapter
 
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.le.ScanRecord
 import android.bluetooth.le.ScanResult
 import android.os.Parcel
 import android.os.Parcelable
+import com.example.matageek.fruity.types.*
+import java.nio.ByteBuffer
 
 class DiscoveredDevice(var lastScanResult: ScanResult) : Parcelable {
     val device: BluetoothDevice get() = lastScanResult.device
     val name get() = lastScanResult.scanRecord?.deviceName ?: ""
+    var enrolled: Boolean = false
     private val rssi get() = lastScanResult.rssi
     var previousRssi = 0
     var highestRssi = -128
@@ -25,6 +29,30 @@ class DiscoveredDevice(var lastScanResult: ScanResult) : Parcelable {
         lastScanResult = scanResult
         previousRssi = rssi
         highestRssi = if (highestRssi > rssi) highestRssi else rssi
+        scanResult.scanRecord?.let { gapAdvertisementReportCheck(it) }
+    }
+
+    private fun gapAdvertisementReportCheck(scanRecord: ScanRecord) {
+        val meshAdv = scanRecord.bytes ?: return
+        if (meshAdv.size < AdvertisingMessageTypes.ADV_PACKET_MAX_SIZE) return
+
+        // check adv data sequence
+        if (meshAdv[0].toInt() != AdvStructureFlags.SIZE_OF_PACKET - 1) return
+        if (meshAdv[AdvStructureFlags.SIZE_OF_PACKET].toInt() !=
+            AdvStructureUUID16.SIZE_OF_PACKET - 1
+        ) return
+        if (meshAdv[AdvStructureFlags.SIZE_OF_PACKET + AdvStructureUUID16.SIZE_OF_PACKET]
+                .toInt() != AdvStructureMeshAccessServiceData.SIZE_OF_PACKET - 1
+        ) return
+
+        val advStructureMeshAccessServiceData =
+            AdvStructureMeshAccessServiceData(meshAdv.copyOfRange(AdvStructureFlags.SIZE_OF_PACKET
+                    + AdvStructureUUID16.SIZE_OF_PACKET,
+                AdvStructureFlags.SIZE_OF_PACKET + AdvStructureUUID16.SIZE_OF_PACKET +
+                        AdvStructureMeshAccessServiceData.SIZE_OF_PACKET))
+        if (advStructureMeshAccessServiceData.data.messageType == ServiceDataMessageType.MESH_ACCESS.type) {
+            this.enrolled = advStructureMeshAccessServiceData.isEnrolled
+        }
     }
 
     /* package */

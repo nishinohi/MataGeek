@@ -8,13 +8,12 @@ import android.content.SharedPreferences
 import android.os.Handler
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import com.example.matageek.fruity.hal.BleGapAdType
 import com.example.matageek.util.Util
 
 class ScannerViewModel(application: Application) : AndroidViewModel(application) {
     private val bleAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     private val scanner: BluetoothLeScanner? = bleAdapter?.bluetoothLeScanner
-    val preferences: SharedPreferences =
-        application.getSharedPreferences(PREFS_ID, Context.MODE_PRIVATE)
     private val handler = Handler()
 
     val scannerLiveData: ScannerStateLiveData =

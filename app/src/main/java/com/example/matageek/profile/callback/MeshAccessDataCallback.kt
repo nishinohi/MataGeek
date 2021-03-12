@@ -32,7 +32,12 @@ abstract class MeshAccessDataCallback() :
             0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22), "AES"
     )
 
-    abstract fun sendPacket(data: Data, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?)
+    abstract fun sendPacket(
+        data: ByteArray,
+        encryptionNonce: Array<Int>?,
+        encryptionKey: SecretKey?,
+    )
+
     abstract fun initialize()
     abstract fun parsePacket(packet: ByteArray)
 
@@ -68,7 +73,7 @@ abstract class MeshAccessDataCallback() :
         val sNoncePacket = ConnPacketEncryptCustomSNonce(MeshAccessManager.NODE_ID,
             partnerId, decryptionNonce[0], decryptionNonce[1])
         encryptionState.postValue(EncryptionState.ENCRYPTED)
-        sendPacket(Data(sNoncePacket.createBytePacket()), encryptionNonce, encryptionKey)
+        sendPacket(sNoncePacket.createBytePacket(), encryptionNonce, encryptionKey)
 
     }
 
@@ -76,8 +81,7 @@ abstract class MeshAccessDataCallback() :
         encryptionState.postValue(EncryptionState.ENCRYPTING)
         val connPacketEncryptCustomStart =
             ConnPacketEncryptCustomStart(MeshAccessManager.NODE_ID, 0, 1, FmKeyId.NETWORK, 1, 0)
-        sendPacket(Data(connPacketEncryptCustomStart.createBytePacket()),
-            null, null)
+        sendPacket(connPacketEncryptCustomStart.createBytePacket(), null, null)
     }
 
     private fun createPlainTextForSecretKey(nodeId: Short, nonce: Array<Int>): ByteArray {
