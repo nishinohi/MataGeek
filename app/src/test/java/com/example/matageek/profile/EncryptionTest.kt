@@ -6,6 +6,7 @@ import no.nordicsemi.android.ble.data.Data
 import org.hamcrest.CoreMatchers.`is`
 import org.junit.Assert.assertThat
 import org.junit.Test
+import java.nio.ByteBuffer
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 

@@ -8,14 +8,9 @@ import java.nio.ByteOrder
 
 class EnrollmentModule : Module("enroll", FmTypes.ModuleId.ENROLLMENT_MODULE.id) {
 
-    fun createEnrollmentBroadcastAppStartMessagePacket(receiver: Short): ByteArray {
+    fun createEnrollmentBroadcastAppStartMessagePacket(receiver: Short, key: ByteArray): ByteArray {
         val data = EnrollmentModuleSetEnrollmentBroadcastAppStartMessage(
-            1, 11,
-            byteArrayOf(12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12),
-            byteArrayOf(12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12),
-            byteArrayOf(12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12),
-            byteArrayOf(12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12),
-            10).createBytePacket()
+            1, 11, key, key, key, key, 10).createBytePacket()
         return createSendModuleActionMessagePacket(
             MessageType.MODULE_TRIGGER_ACTION, receiver,
             0, EnrollmentModuleActionResponseMessages.SET_ENROLLMENT_BROADCAST_APP_START.type,
@@ -134,6 +129,9 @@ class EnrollmentModule : Module("enroll", FmTypes.ModuleId.ENROLLMENT_MODULE.id)
                 when (enrollResponse.enrollmentResponseCode) {
                     EnrollmentResponseCode.PREENROLLMENT_FAILED.code -> {
                         Log.d("MATAG", "NodeId:${connModule.header.sender} enroll failed")
+                    }
+                    EnrollmentResponseCode.OK.code -> {
+                        Log.d("MATAG", "NodeId:${connModule.header.sender} enroll success")
                     }
                 }
             }

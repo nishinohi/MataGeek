@@ -33,7 +33,7 @@ class DeviceConfigActivity : AppCompatActivity(), DialogDeviceNameEdit.NoticeDev
 
         val deviceConfigViewModel: DeviceConfigViewModel by viewModels()
         this.deviceConfigViewModel = deviceConfigViewModel
-        deviceConfigViewModel.connect(discoveredDevice.device)
+        deviceConfigViewModel.connect(discoveredDevice)
         deviceConfigViewModel.connectionState.observe(this, {
             onConnectionUpdated(it)
         })

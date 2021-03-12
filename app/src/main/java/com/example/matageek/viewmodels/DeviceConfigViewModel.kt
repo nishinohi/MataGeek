@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.matageek.R
+import com.example.matageek.adapter.DiscoveredDevice
 import com.example.matageek.manager.MeshAccessManager
 import no.nordicsemi.android.ble.livedata.state.ConnectionState
 
@@ -20,14 +21,14 @@ class DeviceConfigViewModel(application: Application) : AndroidViewModel(applica
         application.getSharedPreferences(application.getString(R.string.preference_device_name_key),
             Context.MODE_PRIVATE)
 
-    lateinit var device: BluetoothDevice
+    lateinit var discoveredDevice: DiscoveredDevice
 
     // TODO use String Provider
-    fun connect(device: BluetoothDevice) {
-        this.device = device
-        reconnect(device)
+    fun connect(discoveredDevice: DiscoveredDevice) {
+        this.discoveredDevice = discoveredDevice
+        reconnect(discoveredDevice.device)
         val application = getApplication<Application>()
-        this.deviceName.postValue(deviceNamePreferences.getString(device.address,
+        this.deviceName.postValue(deviceNamePreferences.getString(discoveredDevice.device.address,
             application.getString(R.string.default_device_name)))
     }
 
@@ -40,13 +41,13 @@ class DeviceConfigViewModel(application: Application) : AndroidViewModel(applica
 
     fun startHandShake() {
         if (connectionState.value == ConnectionState.Ready) {
-            meshAccessManager.startEncryptionHandshake()
+            meshAccessManager.startEncryptionHandshake(discoveredDevice.enrolled)
         }
     }
 
     fun setDeviceName(deviceName: String) {
         with(deviceNamePreferences.edit()) {
-            putString(device.address, deviceName)
+            putString(discoveredDevice.device.address, deviceName)
             commit()
         }
         this.deviceName.postValue(deviceName)
@@ -58,7 +59,7 @@ class DeviceConfigViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun loadDeviceName() {
-        deviceName.postValue(deviceNamePreferences.getString(device.address, "unknown node"))
+        deviceName.postValue(deviceNamePreferences.getString(discoveredDevice.device.address, "unknown node"))
     }
 
     fun sendEnrollmentBroadcastAppStart() {

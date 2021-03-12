@@ -27,7 +27,7 @@ abstract class MeshAccessDataCallback() :
     lateinit var encryptionKey: SecretKey
     lateinit var decryptionNonce: Array<Int>
     lateinit var decryptionKey: SecretKey
-    private val networkKey: SecretKeySpec = SecretKeySpec(
+    var networkKey: SecretKeySpec = SecretKeySpec(
         byteArrayOf(0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22,
             0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22), "AES"
     )
@@ -62,6 +62,7 @@ abstract class MeshAccessDataCallback() :
             encryptionNonce)
         Log.d("MATAG", "encryptionNonce[0]: ${encryptionNonce[0]}")
         Log.d("MATAG", "encryptionNonce[1]: ${encryptionNonce[1]}")
+        Log.d("MATAG", "networkKey: ${Data(networkKey.encoded)}")
         encryptionKey = generateSecretKey(plainTextForEncryptionKey, networkKey)
         val secureRandom = SecureRandom.getInstance("SHA1PRNG")
         decryptionNonce = arrayOf(secureRandom.nextInt(), secureRandom.nextInt())
@@ -74,7 +75,6 @@ abstract class MeshAccessDataCallback() :
             partnerId, decryptionNonce[0], decryptionNonce[1])
         encryptionState.postValue(EncryptionState.ENCRYPTED)
         sendPacket(sNoncePacket.createBytePacket(), encryptionNonce, encryptionKey)
-
     }
 
     fun startEncryptionHandshake() {

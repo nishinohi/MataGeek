@@ -4,8 +4,10 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
+import com.example.matageek.R
 import com.example.matageek.fruity.module.EnrollmentModule
 import com.example.matageek.fruity.module.Module
 import com.example.matageek.fruity.module.StatusReporterModule
@@ -15,8 +17,11 @@ import com.example.matageek.profile.callback.EncryptionState
 import com.example.matageek.profile.FruityDataEncryptAndSplit
 import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.livedata.ObservableBleManager
+import java.nio.ByteBuffer
+import java.security.SecureRandom
 import java.util.*
 import javax.crypto.SecretKey
+import javax.crypto.spec.SecretKeySpec
 import kotlin.Exception
 
 class MeshAccessManager(context: Context) :
@@ -27,6 +32,14 @@ class MeshAccessManager(context: Context) :
     private val modules: MutableList<Module> = mutableListOf()
     val clusterSize: MutableLiveData<Short> = MutableLiveData()
     val batteryInfo: MutableLiveData<Byte> = MutableLiveData()
+
+    // TODO not secure
+    private val defaultKeyInt = 0x22222222
+
+    // TODO not secure
+    private val networkKeyPreference: SharedPreferences =
+        context.getSharedPreferences(context.getString(R.string.preference_network_key),
+            Context.MODE_PRIVATE)
 
     init {
         modules.add(StatusReporterModule())
@@ -108,7 +121,15 @@ class MeshAccessManager(context: Context) :
         deviceInfo.batteryInfo?.let { this.batteryInfo.postValue(it) }
     }
 
-    fun startEncryptionHandshake() {
+    fun startEncryptionHandshake(isEnrolled: Boolean) {
+        // TODO not secure
+        if (isEnrolled) {
+            val key =
+                networkKeyPreference.getInt(context.getString(R.string.network_key), defaultKeyInt)
+            val byteBuffer = ByteBuffer.allocate(16).putInt(key).putInt(key).putInt(key).putInt(key)
+            Log.d("MATAG", "startEncryptionHandshake: ${Data(byteBuffer.array())}")
+            meshAccessDataCallback.networkKey = SecretKeySpec(byteBuffer.array(), "AES")
+        }
         meshAccessDataCallback.startEncryptionHandshake()
     }
 
@@ -128,9 +149,23 @@ class MeshAccessManager(context: Context) :
             modules.find { it.moduleId == FmTypes.ModuleId.ENROLLMENT_MODULE.id }
                 ?: throw Exception("Module not exist")
 
+        // TODO not secure!!
+        if (!networkKeyPreference.contains(context.getString(R.string.network_key))) {
+            networkKeyPreference.edit().apply {
+                putInt(context.getString(R.string.network_key),
+                    SecureRandom.getInstance("SHA1PRNG").nextInt())
+                commit()
+            }
+        }
+        val key =
+            networkKeyPreference.getInt(context.getString(R.string.network_key),
+                defaultKeyInt)
+        val byteBuffer = ByteBuffer.allocate(16).putInt(key).putInt(key).putInt(key).putInt(key)
+
         meshAccessDataCallback.sendPacket(
             (enrollModule as EnrollmentModule).createEnrollmentBroadcastAppStartMessagePacket(
-                meshAccessDataCallback.partnerId), meshAccessDataCallback.encryptionNonce,
+                meshAccessDataCallback.partnerId, byteBuffer.array()),
+            meshAccessDataCallback.encryptionNonce,
             meshAccessDataCallback.encryptionKey)
     }
 
