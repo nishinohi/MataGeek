@@ -1,12 +1,13 @@
 package com.example.matageek.fruity.module
 
+import android.util.Log
 import com.example.matageek.fruity.types.ConnPacketModule
 import com.example.matageek.fruity.types.FmTypes
 import com.example.matageek.fruity.types.MessageType
 import com.example.matageek.manager.DeviceInfo
-import java.lang.Exception
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.Exception
 
 class StatusReporterModule : Module("status", FmTypes.ModuleId.STATUS_REPORTER_MODULE.id) {
 
@@ -21,12 +22,23 @@ class StatusReporterModule : Module("status", FmTypes.ModuleId.STATUS_REPORTER_M
                         ?: throw Exception("invalid Message")
                 notifyObserver(DeviceInfo(statusMessage.clusterSize, statusMessage.batteryInfo))
             }
+            StatusModuleActionResponseMessages.ALL_CONNECTIONS.type -> {
+                val allConnectionsMessage = StatusReporterModuleConnectionsMessage(
+                    packet.copyOfRange(ConnPacketModule.SIZEOF_PACKET, packet.size))
+                Log.d("MATAG", "ID:${modulePacket.header.sender}\n" +
+                        "partner1: ${allConnectionsMessage.partner1}\n" +
+                        "partner2: ${allConnectionsMessage.partner2}\n" +
+                        "partner3: ${allConnectionsMessage.partner3}\n" +
+                        "partner4: ${allConnectionsMessage.partner4}\n")
+            }
         }
     }
 
-    fun createGetStatusMessagePacket(receiver: Short): ByteArray {
+    fun createStatusMessagePacket(
+        receiver: Short, actionType: StatusModuleTriggerActionMessages,
+    ): ByteArray {
         return createSendModuleActionMessagePacket(MessageType.MODULE_TRIGGER_ACTION, receiver, 0,
-            StatusModuleTriggerActionMessages.GET_STATUS.type, null, 0, false)
+            actionType.type, null, 0, false)
     }
 
     class StatusReporterModuleStatusMessage(
@@ -44,6 +56,35 @@ class StatusReporterModule : Module("status", FmTypes.ModuleId.STATUS_REPORTER_M
                     byteBuffer.get(), byteBuffer.get())
             }
         }
+    }
+
+    class StatusReporterModuleConnectionsMessage(packet: ByteArray) {
+        val partner1: Short
+        val rssi1: Byte
+        val partner2: Short
+        val rssi2: Byte
+        val partner3: Short
+        val rssi3: Byte
+        val partner4: Short
+        val rssi4: Byte
+
+        companion object {
+            const val SIZE_OF_PACKET = 12
+        }
+
+        init {
+            if (packet.size < SIZE_OF_PACKET) throw Exception("invalid packet")
+            val byteBuffer = ByteBuffer.wrap(packet).order(ByteOrder.LITTLE_ENDIAN)
+            partner1 = byteBuffer.short
+            rssi1 = byteBuffer.get()
+            partner2 = byteBuffer.short
+            rssi2 = byteBuffer.get()
+            partner3 = byteBuffer.short
+            rssi3 = byteBuffer.get()
+            partner4 = byteBuffer.short
+            rssi4 = byteBuffer.get()
+        }
+
     }
 
     enum class StatusModuleTriggerActionMessages(val type: Byte) {

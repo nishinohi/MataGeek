@@ -79,7 +79,9 @@ class MeshAccessManager(context: Context) :
                         onANonceReceived(connPacketEncryptCustomANonce)
                     }
                     MessageType.ENCRYPT_CUSTOM_DONE -> {
-                        sendGetStatusMessage()
+                        sendStatusTriggerActionMessage(StatusReporterModule.StatusModuleTriggerActionMessages.GET_STATUS)
+//                        sendStatusTriggerActionMessage(StatusReporterModule.StatusModuleTriggerActionMessages.GET_ALL_CONNECTIONS,
+//                            PrimitiveTypes.NODE_ID_BROADCAST)
                     }
                     MessageType.SPLIT_WRITE_CMD -> {
                         val splitPacket = PacketSplitHeader.readFromBytePacket(packet)
@@ -133,14 +135,17 @@ class MeshAccessManager(context: Context) :
         meshAccessDataCallback.startEncryptionHandshake()
     }
 
-    fun sendGetStatusMessage() {
+    fun sendStatusTriggerActionMessage(
+        actionType: StatusReporterModule.StatusModuleTriggerActionMessages,
+        receiver: Short = meshAccessDataCallback.partnerId,
+    ) {
         val statusReporterModule =
             modules.find { it.moduleId == FmTypes.ModuleId.STATUS_REPORTER_MODULE.id }
                 ?: throw Exception("Module not exist")
 
         meshAccessDataCallback.sendPacket(
-            (statusReporterModule as StatusReporterModule).createGetStatusMessagePacket(
-                meshAccessDataCallback.partnerId),
+            (statusReporterModule as StatusReporterModule).createStatusMessagePacket(
+                receiver, actionType),
             meshAccessDataCallback.encryptionNonce, meshAccessDataCallback.encryptionKey)
     }
 

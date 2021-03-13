@@ -1,6 +1,9 @@
 package com.example.matageek.fruity.types
 
 class PrimitiveTypes {
+    companion object {
+        const val NODE_ID_BROADCAST: Short = 0
+    }
 }
 
 enum class DeviceType(val type: Byte) {
