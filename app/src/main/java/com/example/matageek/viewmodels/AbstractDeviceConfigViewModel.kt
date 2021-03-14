@@ -1,0 +1,45 @@
+package com.example.matageek.viewmodels
+
+import android.app.Application
+import android.bluetooth.BluetoothDevice
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import com.example.matageek.adapter.DiscoveredDevice
+import com.example.matageek.manager.MeshAccessManager
+import no.nordicsemi.android.ble.livedata.state.ConnectionState
+
+abstract class AbstractDeviceConfigViewModel(application: Application) : AndroidViewModel(application) {
+    protected val meshAccessManager: MeshAccessManager = MeshAccessManager(application)
+    val connectionState: LiveData<ConnectionState> = meshAccessManager.state
+    val handShakeState = meshAccessManager.handShakeState
+
+    lateinit var discoveredDevice: DiscoveredDevice
+
+    fun connect(discoveredDevice: DiscoveredDevice) {
+        this.discoveredDevice = discoveredDevice
+        reconnect(discoveredDevice.device)
+    }
+
+    // TODO replace magic number
+    private fun reconnect(device: BluetoothDevice) {
+        meshAccessManager.connect(device).retry(3, 100)
+            .useAutoConnect(false)
+            .enqueue()
+    }
+
+    fun startHandShake() {
+        if (connectionState.value == ConnectionState.Ready) {
+            meshAccessManager.startEncryptionHandshake(discoveredDevice.enrolled)
+        }
+    }
+
+    // TODO implement failed
+    fun disconnect() {
+        meshAccessManager.disconnect().enqueue()
+    }
+
+    companion object {
+        const val EXTRA_DEVICE: String = "com.matageek.EXTRA_DEVICE"
+    }
+
+}

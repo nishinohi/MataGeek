@@ -29,9 +29,11 @@ class MeshAccessManager(context: Context) :
 
     /** MeshAccessService Characteristics */
     private lateinit var meshAccessService: BluetoothGattService
+    val handShakeState: MutableLiveData<HandShakeState> = MutableLiveData()
     private val modules: MutableList<Module> = mutableListOf()
     val clusterSize: MutableLiveData<Short> = MutableLiveData()
     val batteryInfo: MutableLiveData<Byte> = MutableLiveData()
+    val trapState: MutableLiveData<Boolean> = MutableLiveData()
 
     // TODO not secure
     private val defaultKeyInt = 0x22222222
@@ -79,6 +81,7 @@ class MeshAccessManager(context: Context) :
                         onANonceReceived(connPacketEncryptCustomANonce)
                     }
                     MessageType.ENCRYPT_CUSTOM_DONE -> {
+                        this@MeshAccessManager.handShakeState.postValue(HandShakeState.HANDSHAKE_DONE)
                         sendStatusTriggerActionMessage(StatusReporterModule.StatusModuleTriggerActionMessages.GET_STATUS)
 //                        sendStatusTriggerActionMessage(StatusReporterModule.StatusModuleTriggerActionMessages.GET_ALL_CONNECTIONS,
 //                            PrimitiveTypes.NODE_ID_BROADCAST)
@@ -124,6 +127,7 @@ class MeshAccessManager(context: Context) :
     }
 
     fun startEncryptionHandshake(isEnrolled: Boolean) {
+        handShakeState.postValue(HandShakeState.HANDSHAKING)
         // TODO not secure
         if (isEnrolled) {
             val key =
@@ -195,6 +199,12 @@ class MeshAccessManager(context: Context) :
             Log.d("MATAG", "onDeviceDisconnected: ")
         }
 
+    }
+
+    enum class HandShakeState(val state: Byte) {
+        HANDSHAKE_NONE(0),
+        HANDSHAKING(1),
+        HANDSHAKE_DONE(2)
     }
 
     companion object {

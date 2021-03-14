@@ -2,7 +2,7 @@
     <string name="app_name">MataGeek</string>
     <string name="MataGeek">MataGeek</string>
     <string name="scanner_label">Scanner</string>
-    <string name="bluetooth_disabled_title">Bluetooth is not avalable</string>
+    <string name="bluetooth_disabled_title">Bluetooth is not available</string>
     <string name="bluetooth_disabled_info">bluetooth disable info</string>
     <string name="bluetooth_disabled_action">eable</string>
     <!-- TODO: Remove or change this placeholder text -->
@@ -13,11 +13,19 @@
     <string name="scanner_guide_location_action">Enable</string>
     <string name="cluster_size">ClusterSize</string>
     <string name="node_activate">Activate</string>
-    <string name="status_connecting">Connecting...</string>
-    <string name="status_initializing">Initializing...</string>
+    <string name="status_connecting">Connecting…</string>
+    <string name="status_initializing">Initializing…</string>
+    <string name="handshake_state_handshaking">Handshaking…</string>
     <string name="preference_device_name_key">preference_device_name_key</string>
     <string name="default_device_name">Unknown device</string>
     <string name="device_config_edit_title">Edit Device Name</string>
     <string name="preference_network_key">network_key</string>
     <string name="network_key">preference_network_key</string>
+    <string name="device_name">Device Name</string>
+    <string name="trap_state">Trap State</string>
+    <string name="battery">Battery</string>
+    <string name="initialize">Initialize</string>
+    <string name="test_send">Test Send</string>
+    <string name="connecting">Connecting…</string>
+    <string name="device_info">Device Info</string>
 </resources>

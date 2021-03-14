@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/activated_cluster_size_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:text="@string/cluster_size"
+        android:textSize="@dimen/cluster_text_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/activated_cluster_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:textSize="@dimen/cluster_text_size"
+        app:layout_constraintStart_toEndOf="@+id/activated_cluster_size_title"
+        app:layout_constraintTop_toTopOf="@+id/activated_cluster_size_title"
+        tools:text="0" />
+
+    <Button
+        android:id="@+id/mode_change_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/activated_cluster_size_title"
+        tools:text="start" />
+
+    <View
+        android:id="@+id/mesh_device_info_divider"
+        android:layout_width="380dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mode_change_button" />
+
+    <TextView
+        android:id="@+id/activated_device_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/device_info"
+        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        android:textColor="@color/section_color"
+        app:layout_constraintStart_toStartOf="@+id/activated_cluster_size_title"
+        app:layout_constraintTop_toBottomOf="@+id/mesh_device_info_divider" />
+
+    <TextView
+        android:id="@+id/activated_device_name_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/device_name"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintStart_toStartOf="@+id/activated_device_info"
+        app:layout_constraintTop_toBottomOf="@+id/activated_device_info" />
+
+    <TextView
+        android:id="@+id/activated_device_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
+        tools:text="unknown"
+        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        app:layout_constraintStart_toStartOf="@+id/activated_device_name_title"
+        app:layout_constraintTop_toBottomOf="@+id/activated_device_name_title" />
+
+    <ImageView
+        android:id="@+id/ic_activated_device_name_edit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="48dp"
+        android:src="@drawable/ic_text_edit"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/activated_device_name_title" />
+
+    <TextView
+        android:id="@+id/activated_trap_state_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/trap_state"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintStart_toStartOf="@+id/activated_device_info"
+        app:layout_constraintTop_toBottomOf="@+id/activated_device_name" />
+
+    <TextView
+        android:id="@+id/activated_trap_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
+        tools:text="fire"
+        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        app:layout_constraintStart_toStartOf="@+id/activated_trap_state_title"
+        app:layout_constraintTop_toBottomOf="@+id/activated_trap_state_title" />
+
+    <ImageView
+        android:id="@+id/ic_activated_trap_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="48dp"
+        android:src="@drawable/ic_baseline_local_fire_department"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/activated_trap_state_title" />
+
+    <TextView
+        android:id="@+id/activated_battery_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/battery"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintStart_toStartOf="@+id/activated_device_info"
+        app:layout_constraintTop_toBottomOf="@+id/activated_trap_state" />
+
+    <TextView
+        android:id="@+id/activated_battery"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
+        tools:text="0%"
+        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        app:layout_constraintStart_toStartOf="@+id/activated_battery_title"
+        app:layout_constraintTop_toBottomOf="@+id/activated_battery_title" />
+
+    <ImageView
+        android:id="@+id/ic_activated_battery"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="48dp"
+        android:src="@drawable/ic_baseline_battery"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/activated_battery_title" />
+
+    <View
+        android:id="@+id/device_info_button_divider"
+        android:layout_width="380dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/activated_battery" />
+
+    <Button
+        android:id="@+id/test_send_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="48dp"
+        android:text="@string/test_send"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/device_info_button_divider" />
+
+    <Button
+        android:id="@+id/initialize_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/initialize"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/device_info_button_divider" />
+</androidx.constraintlayout.widget.ConstraintLayout>
+
