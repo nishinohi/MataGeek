@@ -37,6 +37,7 @@ class DeviceActivatedFragment : Fragment() {
             bind.activatedTrapState.text = if (it) "Fired" else "Not Fired"
         })
         listener?.onDeviceInfoUpdated()
+
         return bind.root
     }
 

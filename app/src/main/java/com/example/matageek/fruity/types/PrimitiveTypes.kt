@@ -3,6 +3,9 @@ package com.example.matageek.fruity.types
 class PrimitiveTypes {
     companion object {
         const val NODE_ID_BROADCAST: Short = 0
+        fun getVendorModuleId(vendorId: Short, subId: Byte): Int {
+            return (FmTypes.ModuleId.VENDOR_MODULE_ID_PREFIX.id.toInt() or (subId.toInt() shl 8) or (vendorId.toInt() shl 16));
+        }
     }
 }
 

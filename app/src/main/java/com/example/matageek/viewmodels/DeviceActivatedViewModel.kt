@@ -11,4 +11,5 @@ class DeviceActivatedViewModel(application: Application) :
     val battery: MutableLiveData<Byte> = meshAccessManager.batteryInfo
     val trapState: MutableLiveData<Boolean> = meshAccessManager.trapState
 
+
 }

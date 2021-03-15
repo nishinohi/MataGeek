@@ -1,5 +1,6 @@
 package com.example.matageek.fruity.types
 
+import com.example.matageek.customexception.MessagePacketSizeException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -54,6 +55,40 @@ class ConnPacketModule(
                 byteBuffer.get(), byteBuffer.get(), byteBuffer.get()
             )
         }
+    }
+}
+
+class ConnPacketVendor {
+    val header: ConnPacketHeader
+    val moduleId: Int
+    val requestHandle: Byte
+    val actionType: Byte
+
+    constructor(
+        messageType: MessageType, sender: Short, receiver: Short, moduleId: Int,
+        requestHandle: Byte, actionType: Byte,
+    ) {
+        this.header = ConnPacketHeader(messageType, sender, receiver)
+        this.moduleId = moduleId
+        this.requestHandle = requestHandle
+        this.actionType = actionType
+    }
+
+    constructor(packet: ByteArray) {
+        if (packet.size < SIZE_OF_PACKET) throw MessagePacketSizeException("${this::class.java}",
+            SIZE_OF_PACKET)
+        val byteBuffer = ByteBuffer.wrap(packet).order(ByteOrder.LITTLE_ENDIAN)
+        val headerPacket: ByteArray = ByteArray(ConnPacketHeader.SIZEOF_PACKET)
+        byteBuffer.get(headerPacket, 0, ConnPacketHeader.SIZEOF_PACKET)
+        this.header = ConnPacketHeader.readFromBytePacket(headerPacket)
+            ?: throw MessagePacketSizeException("${this::class.java}", SIZE_OF_PACKET)
+        this.moduleId = byteBuffer.int
+        this.requestHandle = byteBuffer.get()
+        this.actionType = byteBuffer.get()
+    }
+
+    companion object {
+        const val SIZE_OF_PACKET = ConnPacketHeader.SIZEOF_PACKET + 6
     }
 }
 

@@ -8,7 +8,14 @@ import com.example.matageek.manager.MeshAccessObserver
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-abstract class Module(protected var moduleName: String, var moduleId: Byte) {
+abstract class Module(
+    protected val moduleName: String,
+    val moduleId: Byte,
+    val vendorModuleId: Int = 0,
+) {
+
+    constructor(moduleName: String, vendorModuleId: Int) : this(moduleName, 0, vendorModuleId)
+
     private val observers: MutableList<MeshAccessObserver> = mutableListOf()
 
     fun addObserver(observer: MeshAccessObserver) {
