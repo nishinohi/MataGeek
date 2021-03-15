@@ -7,6 +7,7 @@ import android.content.res.Resources
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
 import com.example.matageek.adapter.DiscoveredDevice
@@ -57,6 +58,15 @@ class DeviceManageActivity : AppCompatActivity(),
     override fun onBackPressed() {
         deviceActivatedViewModel.disconnect()
         super.onBackPressed()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                deviceActivatedViewModel.disconnect()
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun onConnectionUpdated(
