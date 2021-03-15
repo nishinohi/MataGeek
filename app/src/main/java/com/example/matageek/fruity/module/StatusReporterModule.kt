@@ -2,14 +2,14 @@ package com.example.matageek.fruity.module
 
 import android.util.Log
 import com.example.matageek.fruity.types.ConnPacketModule
-import com.example.matageek.fruity.types.FmTypes
 import com.example.matageek.fruity.types.MessageType
+import com.example.matageek.fruity.types.ModuleId
 import com.example.matageek.manager.DeviceInfo
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.Exception
 
-class StatusReporterModule : Module("status", FmTypes.ModuleId.STATUS_REPORTER_MODULE.id) {
+class StatusReporterModule : Module("status", ModuleId.STATUS_REPORTER_MODULE.id) {
 
     override fun actionResponseMessageReceivedHandler(packet: ByteArray) {
         val modulePacket =

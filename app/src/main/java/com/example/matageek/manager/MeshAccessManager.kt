@@ -144,7 +144,7 @@ class MeshAccessManager(context: Context) :
         receiver: Short = meshAccessDataCallback.partnerId,
     ) {
         val statusReporterModule =
-            modules.find { it.moduleId == FmTypes.ModuleId.STATUS_REPORTER_MODULE.id }
+            modules.find { it.moduleId == ModuleId.STATUS_REPORTER_MODULE.id }
                 ?: throw Exception("Module not exist")
 
         meshAccessDataCallback.sendPacket(
@@ -155,7 +155,7 @@ class MeshAccessManager(context: Context) :
 
     fun sendEnrollmentBroadcastAppStart() {
         val enrollModule =
-            modules.find { it.moduleId == FmTypes.ModuleId.ENROLLMENT_MODULE.id }
+            modules.find { it.moduleId == ModuleId.ENROLLMENT_MODULE.id }
                 ?: throw Exception("Module not exist")
 
         // TODO not secure!!

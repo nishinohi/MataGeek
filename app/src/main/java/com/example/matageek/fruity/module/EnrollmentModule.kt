@@ -6,7 +6,7 @@ import no.nordicsemi.android.ble.data.Data
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class EnrollmentModule : Module("enroll", FmTypes.ModuleId.ENROLLMENT_MODULE.id) {
+class EnrollmentModule : Module("enroll", ModuleId.ENROLLMENT_MODULE.id) {
 
     fun createEnrollmentBroadcastAppStartMessagePacket(receiver: Short, key: ByteArray): ByteArray {
         val data = EnrollmentModuleSetEnrollmentBroadcastAppStartMessage(
