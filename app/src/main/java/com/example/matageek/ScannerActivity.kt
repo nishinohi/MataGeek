@@ -13,7 +13,7 @@ import com.example.matageek.viewmodels.ScannerViewModel
 class ScannerActivity : AppCompatActivity() {
     private lateinit var scannerViewModel: ScannerViewModel
     private lateinit var _binding: ActivityScannerBinding
-    val binding get() = _binding
+    private val binding get() = _binding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +25,8 @@ class ScannerActivity : AppCompatActivity() {
         scannerViewModel.scannerLiveData.observe(this, this::startScan)
         val adapter = DevicesAdapter {
             Log.d("MATAG", "onCreate: $it")
-            Intent(this, DeviceConfigActivity::class.java).apply {
+            Intent(this,
+                if (it.enrolled) DeviceManageActivity::class.java else DeviceConfigActivity::class.java).apply {
                 putExtra(DeviceConfigActivity.EXTRA_DEVICE, it)
                 startActivity(this)
             }
