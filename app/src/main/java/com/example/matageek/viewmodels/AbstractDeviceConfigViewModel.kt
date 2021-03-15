@@ -8,7 +8,8 @@ import com.example.matageek.adapter.DiscoveredDevice
 import com.example.matageek.manager.MeshAccessManager
 import no.nordicsemi.android.ble.livedata.state.ConnectionState
 
-abstract class AbstractDeviceConfigViewModel(application: Application) : AndroidViewModel(application) {
+abstract class AbstractDeviceConfigViewModel(application: Application) :
+    AndroidViewModel(application) {
     protected val meshAccessManager: MeshAccessManager = MeshAccessManager(application)
     val connectionState: LiveData<ConnectionState> = meshAccessManager.state
     val handShakeState = meshAccessManager.handShakeState
