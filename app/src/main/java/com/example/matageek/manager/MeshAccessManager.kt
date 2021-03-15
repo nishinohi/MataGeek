@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.matageek.R
 import com.example.matageek.fruity.module.EnrollmentModule
+import com.example.matageek.fruity.module.MatageekModule
 import com.example.matageek.fruity.module.Module
 import com.example.matageek.fruity.module.StatusReporterModule
 import com.example.matageek.fruity.types.*
@@ -46,6 +47,7 @@ class MeshAccessManager(context: Context) :
     init {
         modules.add(StatusReporterModule())
         modules.add(EnrollmentModule())
+        modules.add(MatageekModule())
         modules.forEach { it.addObserver(this) }
     }
 
@@ -59,10 +61,11 @@ class MeshAccessManager(context: Context) :
 
             override fun sendPacket(
                 data: ByteArray, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?,
+                enqueue: Boolean,
             ) {
-                writeCharacteristic(this.maRxCharacteristic, Data(data))
+                val request = writeCharacteristic(this.maRxCharacteristic, Data(data))
                     .split(FruityDataEncryptAndSplit(encryptionNonce, encryptionKey)).with(this)
-                    .enqueue()
+                if (enqueue) request.enqueue()
             }
 
             override fun initialize() {
@@ -83,6 +86,7 @@ class MeshAccessManager(context: Context) :
                     MessageType.ENCRYPT_CUSTOM_DONE -> {
                         this@MeshAccessManager.handShakeState.postValue(HandShakeState.HANDSHAKE_DONE)
                         sendStatusTriggerActionMessage(StatusReporterModule.StatusModuleTriggerActionMessages.GET_STATUS)
+                        sendMatageekTrapStateMessage()
 //                        sendStatusTriggerActionMessage(StatusReporterModule.StatusModuleTriggerActionMessages.GET_ALL_CONNECTIONS,
 //                            PrimitiveTypes.NODE_ID_BROADCAST)
                     }
@@ -115,16 +119,32 @@ class MeshAccessManager(context: Context) :
         }
 
     fun moduleMessageReceivedHandler(packet: ByteArray) {
-        val modulePacketHeader = ConnPacketModule.readFromBytePacket(packet)
+        val modulePacket = ConnPacketModule.readFromBytePacket(packet)
             ?: throw Exception("mesh Message Error")
-        modules.find { modulePacketHeader.moduleId == it.moduleId }
+        modules.find { it.moduleId != 0.toByte() && modulePacket.moduleId == it.moduleId }
+            ?.actionResponseMessageReceivedHandler(packet)
+        val vendorModulePacket = ConnPacketVendorModule(packet)
+        modules.find { it.vendorModuleId != 0 && vendorModulePacket.vendorModuleId == it.vendorModuleId }
             ?.actionResponseMessageReceivedHandler(packet)
     }
 
     override fun update(deviceInfo: DeviceInfo) {
         deviceInfo.clusterSize?.let { this.clusterSize.postValue(it) }
         deviceInfo.batteryInfo?.let { this.batteryInfo.postValue(it) }
+        deviceInfo.trapState?.let { this.trapState.postValue(it) }
     }
+
+    fun <T : Module> findModuleById(moduleId: Int): T {
+        val module = modules.find {
+            (it.vendorModuleId == 0 && it.moduleId == moduleId.toByte()) ||
+                    (it.moduleId == 0.toByte() && it.vendorModuleId == moduleId)
+        }
+            ?: throw Exception("Module not found")
+        return module as? T
+            ?: throw Exception("${module::class.java.toString()} is not cast type")
+    }
+
+    // TODO send module message by another MODEL class
 
     fun startEncryptionHandshake(isEnrolled: Boolean) {
         handShakeState.postValue(HandShakeState.HANDSHAKING)
@@ -144,12 +164,10 @@ class MeshAccessManager(context: Context) :
         receiver: Short = meshAccessDataCallback.partnerId,
     ) {
         val statusReporterModule =
-            modules.find { it.moduleId == ModuleId.STATUS_REPORTER_MODULE.id }
-                ?: throw Exception("Module not exist")
+            findModuleById<StatusReporterModule>(ModuleId.STATUS_REPORTER_MODULE.id.toInt())
 
         meshAccessDataCallback.sendPacket(
-            (statusReporterModule as StatusReporterModule).createStatusMessagePacket(
-                receiver, actionType),
+            statusReporterModule.createStatusMessagePacket(receiver, actionType),
             meshAccessDataCallback.encryptionNonce, meshAccessDataCallback.encryptionKey)
     }
 
@@ -174,6 +192,17 @@ class MeshAccessManager(context: Context) :
         meshAccessDataCallback.sendPacket(
             (enrollModule as EnrollmentModule).createEnrollmentBroadcastAppStartMessagePacket(
                 meshAccessDataCallback.partnerId, byteBuffer.array()),
+            meshAccessDataCallback.encryptionNonce,
+            meshAccessDataCallback.encryptionKey)
+    }
+
+    fun sendMatageekTrapStateMessage() {
+        val matageekModule = findModuleById<MatageekModule>(
+            PrimitiveTypes.getVendorModuleId(VendorModuleId.MATAGEEK_MODULE.id, 1)
+        )
+        meshAccessDataCallback.sendPacket(
+            matageekModule.createTrapStateMessagePacket(meshAccessDataCallback.partnerId,
+                MatageekModule.MatageekModuleTriggerActionMessages.TRAP_STATE),
             meshAccessDataCallback.encryptionNonce,
             meshAccessDataCallback.encryptionKey)
     }

@@ -4,7 +4,8 @@ class PrimitiveTypes {
     companion object {
         const val NODE_ID_BROADCAST: Short = 0
         fun getVendorModuleId(vendorId: Short, subId: Byte): Int {
-            return (ModuleId.VENDOR_MODULE_ID_PREFIX.id.toInt() or (subId.toInt() shl 8) or (vendorId.toInt() shl 16));
+            return (ModuleId.VENDOR_MODULE_ID_PREFIX.id.toUByte().toInt() or
+                    (subId.toInt() shl 8) or (vendorId.toUShort().toInt() shl 16));
         }
     }
 }
@@ -56,6 +57,10 @@ enum class ModuleId(val id: Byte) {
     //The in between space is reserved for later extensions, e.g. of the vendor module ids
     //Invalid Module: 0xFF is the flash memory default and is therefore invalid
     INVALID_MODULE(255.toByte()),
+}
+
+enum class VendorModuleId(val id: Short) {
+    MATAGEEK_MODULE(0xAB24.toShort())
 }
 
 enum class DeviceType(val type: Byte) {

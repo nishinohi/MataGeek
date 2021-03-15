@@ -1,6 +1,7 @@
 package com.example.matageek.fruity.module
 
 import com.example.matageek.fruity.types.ConnPacketModule
+import com.example.matageek.fruity.types.ConnPacketVendorModule
 import com.example.matageek.fruity.types.MessageType
 import com.example.matageek.manager.DeviceInfo
 import com.example.matageek.manager.MeshAccessManager
@@ -32,19 +33,31 @@ abstract class Module(
         }
     }
 
+    private fun isVendorModule(): Boolean {
+        return moduleId.toInt() == 0
+    }
+
     //TODO: reliable is currently not supported and by default false. The input is ignored
     protected fun createSendModuleActionMessagePacket(
         messageType: MessageType, receiver: Short, requestHandle: Byte, actionType: Byte,
         additionalData: ByteArray?, additionalDataSize: Int, reliable: Boolean,
     ): ByteArray {
-        val packetBuf = ByteBuffer.allocate(ConnPacketModule.SIZEOF_PACKET + additionalDataSize)
-            .order(ByteOrder.LITTLE_ENDIAN)
-        packetBuf.put(messageType.typeValue)
-        packetBuf.putShort(MeshAccessManager.NODE_ID)
-        packetBuf.putShort(receiver)
-        packetBuf.put(moduleId)
-        packetBuf.put(requestHandle)
-        packetBuf.put(actionType)
+        val headerSize =
+            if (isVendorModule()) ConnPacketVendorModule.SIZEOF_PACKET else ConnPacketModule.SIZEOF_PACKET
+        val packetBuf =
+            ByteBuffer.allocate(headerSize + additionalDataSize).order(ByteOrder.LITTLE_ENDIAN)
+
+        if (isVendorModule()) {
+            val connPacketVendorModule = ConnPacketVendorModule(
+                messageType, MeshAccessManager.NODE_ID, receiver, vendorModuleId,
+                requestHandle, actionType)
+            packetBuf.put(connPacketVendorModule.createBytePacket())
+        } else {
+            val connPacketModule = ConnPacketModule(
+                messageType, MeshAccessManager.NODE_ID, receiver, moduleId,
+                requestHandle, actionType)
+            packetBuf.put(connPacketModule.createBytePacket())
+        }
         if (additionalData != null) packetBuf.put(additionalData)
         return packetBuf.array()
     }

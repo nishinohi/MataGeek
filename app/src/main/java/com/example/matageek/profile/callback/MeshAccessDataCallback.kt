@@ -36,6 +36,7 @@ abstract class MeshAccessDataCallback() :
         data: ByteArray,
         encryptionNonce: Array<Int>?,
         encryptionKey: SecretKey?,
+        enqueue: Boolean = true
     )
 
     abstract fun initialize()

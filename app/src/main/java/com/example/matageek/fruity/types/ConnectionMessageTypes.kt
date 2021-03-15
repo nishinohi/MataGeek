@@ -42,8 +42,14 @@ class ConnPacketModule(
     val moduleId: Byte,
     val requestHandle: Byte,
     val actionType: Byte,
-) {
+) : ConnectionMessageTypes {
     val header: ConnPacketHeader = ConnPacketHeader(messageType, sender, receiver)
+
+    override fun createBytePacket(): ByteArray {
+        val byteBuffer = ByteBuffer.allocate(SIZEOF_PACKET).order(ByteOrder.LITTLE_ENDIAN)
+        byteBuffer.put(header.createBytePacket()).put(moduleId).put(requestHandle).put(actionType)
+        return byteBuffer.array()
+    }
 
     companion object {
         var SIZEOF_PACKET = ConnPacketHeader.SIZEOF_PACKET + 3
@@ -56,40 +62,50 @@ class ConnPacketModule(
             )
         }
     }
+
 }
 
-class ConnPacketVendor {
+class ConnPacketVendorModule : ConnectionMessageTypes {
     val header: ConnPacketHeader
-    val moduleId: Int
+    val vendorModuleId: Int
     val requestHandle: Byte
     val actionType: Byte
 
     constructor(
-        messageType: MessageType, sender: Short, receiver: Short, moduleId: Int,
+        messageType: MessageType, sender: Short, receiver: Short, vendorModuleId: Int,
         requestHandle: Byte, actionType: Byte,
     ) {
         this.header = ConnPacketHeader(messageType, sender, receiver)
-        this.moduleId = moduleId
+        this.vendorModuleId = vendorModuleId
         this.requestHandle = requestHandle
         this.actionType = actionType
     }
 
     constructor(packet: ByteArray) {
-        if (packet.size < SIZE_OF_PACKET) throw MessagePacketSizeException("${this::class.java}",
-            SIZE_OF_PACKET)
+        if (packet.size < SIZEOF_PACKET) throw MessagePacketSizeException(this::class.java.toString(),
+            SIZEOF_PACKET)
         val byteBuffer = ByteBuffer.wrap(packet).order(ByteOrder.LITTLE_ENDIAN)
         val headerPacket: ByteArray = ByteArray(ConnPacketHeader.SIZEOF_PACKET)
         byteBuffer.get(headerPacket, 0, ConnPacketHeader.SIZEOF_PACKET)
         this.header = ConnPacketHeader.readFromBytePacket(headerPacket)
-            ?: throw MessagePacketSizeException("${this::class.java}", SIZE_OF_PACKET)
-        this.moduleId = byteBuffer.int
+            ?: throw MessagePacketSizeException("${this::class.java}", SIZEOF_PACKET)
+        this.vendorModuleId = byteBuffer.int
         this.requestHandle = byteBuffer.get()
         this.actionType = byteBuffer.get()
     }
 
-    companion object {
-        const val SIZE_OF_PACKET = ConnPacketHeader.SIZEOF_PACKET + 6
+    override fun createBytePacket(): ByteArray {
+        val byteBuffer: ByteBuffer =
+            ByteBuffer.allocate(SIZEOF_PACKET).order(ByteOrder.LITTLE_ENDIAN)
+        byteBuffer.put(header.createBytePacket()).putInt(vendorModuleId).put(requestHandle)
+            .put(actionType)
+        return byteBuffer.array()
     }
+
+    companion object {
+        const val SIZEOF_PACKET = ConnPacketHeader.SIZEOF_PACKET + 6
+    }
+
 }
 
 class PacketSplitHeader(
