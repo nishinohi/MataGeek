@@ -33,13 +33,6 @@ class StatusReporterModule : Module("status", ModuleId.STATUS_REPORTER_MODULE.id
         }
     }
 
-    fun createStatusMessagePacket(
-        receiver: Short, actionType: StatusModuleTriggerActionMessages,
-    ): ByteArray {
-        return createSendModuleActionMessagePacket(MessageType.MODULE_TRIGGER_ACTION, receiver, 0,
-            actionType.type, null, 0, false)
-    }
-
     class StatusReporterModuleStatusMessage(
         val clusterSize: Short, val inConnectionPartner: Short, val inConnectionRSSI: Byte,
         val freeInAndOut: Byte, val batteryInfo: Byte, val connectionLossCounter: Byte,

@@ -1,9 +1,7 @@
 package com.example.matageek.fruity.module
 
 import com.example.matageek.customexception.MessagePacketSizeException
-import com.example.matageek.fruity.types.ConnPacketVendorModule
-import com.example.matageek.fruity.types.MessageType
-import com.example.matageek.fruity.types.PrimitiveTypes
+import com.example.matageek.fruity.types.*
 import com.example.matageek.manager.DeviceInfo
 
 class MatageekModule : Module("matageek", PrimitiveTypes.getVendorModuleId(
@@ -12,46 +10,89 @@ class MatageekModule : Module("matageek", PrimitiveTypes.getVendorModuleId(
     override fun actionResponseMessageReceivedHandler(packet: ByteArray) {
         val vendorModulePacket = ConnPacketVendorModule(packet)
         when (vendorModulePacket.actionType) {
-            MatageekModuleActionResponseMessages.TRAP_STATE_RESPONSE.type -> {
-                val trapStateMessage = MatageekModuleTrapStateMessage(packet.copyOfRange(
+            MatageekModuleActionResponseMessages.STATE_RESPONSE.type -> {
+                val trapStateMessage = MatageekModuleStateMessage(packet.copyOfRange(
                     ConnPacketVendorModule.SIZEOF_PACKET, packet.size))
-                notifyObserver(DeviceInfo(null, null, trapStateMessage.trapState, null))
+                notifyObserver(DeviceInfo(null, null, trapStateMessage.trapState,
+                    null, MatageekMode.getMode(trapStateMessage.mode)))
             }
         }
     }
 
-    fun createTrapStateMessagePacket(
-        receiver: Short, actionType: MatageekModuleTriggerActionMessages,
-    ): ByteArray {
-        return createSendModuleActionMessagePacket(MessageType.MODULE_TRIGGER_ACTION,
-            receiver, 0, actionType.type, null, 0, false)
-    }
-
-    class MatageekModuleTrapStateMessage(packet: ByteArray) {
+    class MatageekModuleStateMessage : ConnectionMessageTypes {
         val trapState: Boolean
+        val mode: Byte
 
-        init {
+        constructor(packet: ByteArray) {
             if (packet.size != SIZEOF_PACKET) throw MessagePacketSizeException(
                 this::class.java.toString(), SIZEOF_PACKET)
-            trapState = packet[0] == 1.toByte()
+            val byteBuffer = getByteBufferWrap(packet)
+            trapState = byteBuffer.get() == 1.toByte()
+            mode = byteBuffer.get()
         }
 
         companion object {
-            const val SIZEOF_PACKET = 1
+            const val SIZEOF_PACKET = 2
+        }
+
+        override fun createBytePacket(): ByteArray {
+            TODO("Not yet implemented")
+        }
+    }
+
+    class MatageekModuleModeChangeMessage : ConnectionMessageTypes {
+        val matageekMode: MatageekMode
+        val clusterSize: Short
+
+        constructor(mode: MatageekMode, clusterSize: Short) {
+            this.matageekMode = mode
+            this.clusterSize = clusterSize
+        }
+
+        constructor(packet: ByteArray) {
+            if (packet.size < SIZEOF_PACKET) throw MessagePacketSizeException(
+                this::class.java.toString(), SIZEOF_PACKET)
+            val byteBuffer = getByteBufferWrap(packet)
+            matageekMode = MatageekMode.getMode(byteBuffer.get())
+            clusterSize = byteBuffer.short
+        }
+
+        companion object {
+            const val SIZEOF_PACKET = 3
+        }
+
+        override fun createBytePacket(): ByteArray {
+            val byteBuffer = getByteBufferAllocate(SIZEOF_PACKET)
+            byteBuffer.put(matageekMode.mode)
+            byteBuffer.putShort(clusterSize)
+            return  byteBuffer.array()
         }
     }
 
     enum class MatageekModuleTriggerActionMessages(
         val type: Byte,
     ) {
-        TRAP_STATE(0),
+        STATE(0),
         TRAP_FIRE(1),
         MODE_CHANGE(2),
         BATTERY_DEAD(3),
     }
 
     enum class MatageekModuleActionResponseMessages(val type: Byte) {
-        TRAP_STATE_RESPONSE(0),
+        STATE_RESPONSE(0),
+    }
+
+    enum class MatageekMode(val mode: Byte) {
+        SETUP(0),
+        DETECT(1);
+
+        companion object {
+            fun getMode(mode: Byte): MatageekMode {
+                return MatageekMode.values().find { it.mode == mode }
+                    ?: throw IllegalArgumentException(this::class.java.toString())
+            }
+        }
+
     }
 
 }

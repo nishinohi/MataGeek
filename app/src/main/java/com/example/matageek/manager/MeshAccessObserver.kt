@@ -1,5 +1,7 @@
 package com.example.matageek.manager
 
+import com.example.matageek.fruity.module.MatageekModule
+
 interface MeshAccessObserver {
     abstract fun update(deviceInfo: DeviceInfo)
 }
@@ -9,4 +11,5 @@ data class DeviceInfo(
     val batteryInfo: Byte? = null,
     val trapState: Boolean? = null,
     val deviceName: String? = null,
+    val matageekMode: MatageekModule.MatageekMode? = null
 )

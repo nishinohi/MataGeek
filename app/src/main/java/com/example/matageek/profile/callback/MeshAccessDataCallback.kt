@@ -9,6 +9,7 @@ import com.example.matageek.manager.MeshAccessManager
 import com.example.matageek.util.Util
 import no.nordicsemi.android.ble.callback.DataReceivedCallback
 import no.nordicsemi.android.ble.callback.DataSentCallback
+import no.nordicsemi.android.ble.callback.SuccessCallback
 import no.nordicsemi.android.ble.data.Data
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -36,7 +37,7 @@ abstract class MeshAccessDataCallback() :
         data: ByteArray,
         encryptionNonce: Array<Int>?,
         encryptionKey: SecretKey?,
-        enqueue: Boolean = true
+        callback: SuccessCallback? = null
     )
 
     abstract fun initialize()

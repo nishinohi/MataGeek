@@ -62,6 +62,14 @@ abstract class Module(
         return packetBuf.array()
     }
 
+    fun createTriggerActionMessagePacket(
+        receiver: Short, actionType: Byte, additionalData: ByteArray? = null,
+        additionalDataSize: Int = 0,
+    ): ByteArray {
+        return createSendModuleActionMessagePacket(MessageType.MODULE_TRIGGER_ACTION, receiver, 0,
+            actionType, additionalData, additionalDataSize, false)
+    }
+
     abstract fun actionResponseMessageReceivedHandler(packet: ByteArray)
 
 }

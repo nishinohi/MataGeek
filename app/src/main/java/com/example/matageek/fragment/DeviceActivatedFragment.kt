@@ -1,7 +1,6 @@
 package com.example.matageek.fragment
 
 import android.content.Context
-import android.media.midi.MidiManager
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -9,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import com.example.matageek.databinding.FragmentDeviceActivatedBinding
-import com.example.matageek.manager.DeviceInfo
+import com.example.matageek.fruity.module.MatageekModule
 import com.example.matageek.viewmodels.DeviceActivatedViewModel
 
 class DeviceActivatedFragment : Fragment() {
@@ -36,6 +35,16 @@ class DeviceActivatedFragment : Fragment() {
         deviceActivatedViewModel.trapState.observe(viewLifecycleOwner, {
             bind.activatedTrapState.text = if (it) "Fired" else "Not Fired"
         })
+        deviceActivatedViewModel.mode.observe(viewLifecycleOwner, {
+            bind.matageekMode.text =
+                if (it == MatageekModule.MatageekMode.SETUP) "SETUP" else "DETECT"
+            bind.modeChangeButton.text =
+                if (it == MatageekModule.MatageekMode.SETUP) "START DETECT" else "STOP DETECT"
+        })
+        // button handler
+        bind.modeChangeButton.setOnClickListener {
+            deviceActivatedViewModel.sendMatageekModeChangeMessage()
+        }
         listener?.onDeviceInfoUpdated()
 
         return bind.root

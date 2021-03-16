@@ -16,6 +16,7 @@ import com.example.matageek.fruity.types.*
 import com.example.matageek.profile.callback.MeshAccessDataCallback
 import com.example.matageek.profile.callback.EncryptionState
 import com.example.matageek.profile.FruityDataEncryptAndSplit
+import no.nordicsemi.android.ble.callback.SuccessCallback
 import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.livedata.ObservableBleManager
 import java.nio.ByteBuffer
@@ -35,6 +36,7 @@ class MeshAccessManager(context: Context) :
     val clusterSize: MutableLiveData<Short> = MutableLiveData()
     val batteryInfo: MutableLiveData<Byte> = MutableLiveData()
     val trapState: MutableLiveData<Boolean> = MutableLiveData()
+    val modeState: MutableLiveData<MatageekModule.MatageekMode> = MutableLiveData()
 
     // TODO not secure
     private val defaultKeyInt = 0x22222222
@@ -61,11 +63,12 @@ class MeshAccessManager(context: Context) :
 
             override fun sendPacket(
                 data: ByteArray, encryptionNonce: Array<Int>?, encryptionKey: SecretKey?,
-                enqueue: Boolean,
+                callback: SuccessCallback?,
             ) {
                 val request = writeCharacteristic(this.maRxCharacteristic, Data(data))
                     .split(FruityDataEncryptAndSplit(encryptionNonce, encryptionKey)).with(this)
-                if (enqueue) request.enqueue()
+                if (callback != null) request.done(callback)
+                request.enqueue()
             }
 
             override fun initialize() {
@@ -84,8 +87,17 @@ class MeshAccessManager(context: Context) :
                     }
                     MessageType.ENCRYPT_CUSTOM_DONE -> {
                         this@MeshAccessManager.handShakeState.postValue(HandShakeState.HANDSHAKE_DONE)
-                        sendStatusTriggerActionMessage(StatusReporterModule.StatusModuleTriggerActionMessages.GET_STATUS)
-                        sendMatageekTrapStateMessage()
+                        val callback = SuccessCallback {
+                            sendModuleActionTriggerMessage(
+                                PrimitiveTypes.getVendorModuleId(VendorModuleId.MATAGEEK_MODULE.id,
+                                    1),
+                                MatageekModule.MatageekModuleTriggerActionMessages.STATE.type
+                            )
+                        }
+                        sendModuleActionTriggerMessage(
+                            ModuleId.STATUS_REPORTER_MODULE.id.toUByte().toInt(),
+                            StatusReporterModule.StatusModuleTriggerActionMessages.GET_STATUS.type,
+                            this.partnerId, null, 0, callback)
 //                        sendStatusTriggerActionMessage(StatusReporterModule.StatusModuleTriggerActionMessages.GET_ALL_CONNECTIONS,
 //                            PrimitiveTypes.NODE_ID_BROADCAST)
                     }
@@ -106,7 +118,6 @@ class MeshAccessManager(context: Context) :
                     MessageType.CLUSTER_INFO_UPDATE -> {
                         val clusterInfoUpdate =
                             ConnPacketClusterInfoUpdate(packet)
-                                ?: throw Exception("invalid message")
                         update(DeviceInfo(clusterInfoUpdate.clusterSizeChange, null))
                     }
                     else -> {
@@ -129,9 +140,10 @@ class MeshAccessManager(context: Context) :
         deviceInfo.clusterSize?.let { this.clusterSize.postValue(it) }
         deviceInfo.batteryInfo?.let { this.batteryInfo.postValue(it) }
         deviceInfo.trapState?.let { this.trapState.postValue(it) }
+        deviceInfo.matageekMode?.let { this.modeState.postValue(it) }
     }
 
-    fun <T : Module> findModuleById(moduleId: Int): T {
+    private fun <T : Module> findModuleById(moduleId: Int): T {
         val module = modules.find {
             (it.vendorModuleId == 0 && it.moduleId == moduleId.toByte()) ||
                     (it.moduleId == 0.toByte() && it.vendorModuleId == moduleId)
@@ -156,18 +168,6 @@ class MeshAccessManager(context: Context) :
         meshAccessDataCallback.startEncryptionHandshake()
     }
 
-    fun sendStatusTriggerActionMessage(
-        actionType: StatusReporterModule.StatusModuleTriggerActionMessages,
-        receiver: Short = meshAccessDataCallback.partnerId,
-    ) {
-        val statusReporterModule =
-            findModuleById<StatusReporterModule>(ModuleId.STATUS_REPORTER_MODULE.id.toInt())
-
-        meshAccessDataCallback.sendPacket(
-            statusReporterModule.createStatusMessagePacket(receiver, actionType),
-            meshAccessDataCallback.encryptionNonce, meshAccessDataCallback.encryptionKey)
-    }
-
     fun sendEnrollmentBroadcastAppStart() {
         val enrollModule =
             modules.find { it.moduleId == ModuleId.ENROLLMENT_MODULE.id }
@@ -178,7 +178,7 @@ class MeshAccessManager(context: Context) :
             networkKeyPreference.edit().apply {
                 putInt(context.getString(R.string.network_key),
                     SecureRandom.getInstance("SHA1PRNG").nextInt())
-                commit()
+                apply()
             }
         }
         val key =
@@ -193,15 +193,17 @@ class MeshAccessManager(context: Context) :
             meshAccessDataCallback.encryptionKey)
     }
 
-    fun sendMatageekTrapStateMessage() {
-        val matageekModule = findModuleById<MatageekModule>(
-            PrimitiveTypes.getVendorModuleId(VendorModuleId.MATAGEEK_MODULE.id, 1)
-        )
+    fun sendModuleActionTriggerMessage(
+        moduleId: Int, actionType: Byte, receiver: Short = meshAccessDataCallback.partnerId,
+        additionalData: ByteArray? = null, additionalDataSize: Int = 0,
+        callback: SuccessCallback? = null,
+    ) {
+        val module = findModuleById<Module>(moduleId)
         meshAccessDataCallback.sendPacket(
-            matageekModule.createTrapStateMessagePacket(meshAccessDataCallback.partnerId,
-                MatageekModule.MatageekModuleTriggerActionMessages.TRAP_STATE),
+            module.createTriggerActionMessagePacket(receiver,
+                actionType, additionalData, additionalDataSize),
             meshAccessDataCallback.encryptionNonce,
-            meshAccessDataCallback.encryptionKey)
+            meshAccessDataCallback.encryptionKey, callback)
     }
 
     private inner class MataGeekBleManagerGattCallback : BleManagerGattCallback() {

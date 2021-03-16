@@ -28,4 +28,6 @@
     <string name="test_send">Test Send</string>
     <string name="connecting">Connecting…</string>
     <string name="device_info">Device Info</string>
+    <string name="matageek_mode">Mode</string>
+    <string name="mesh_info">Mesh Info</string>
 </resources>
