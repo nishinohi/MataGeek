@@ -152,8 +152,10 @@ class EncryptionTest : TestCase() {
                 override fun sendPacket(
                     data: ByteArray,
                     encryptionNonce: Array<Int>?,
-                    encryptionKey: SecretKey?
+                    encryptionKey: SecretKey?,
+                    enqueue: Boolean,
                 ) {
+                    TODO("Not yet implemented")
                 }
 
                 override fun initialize() {
@@ -189,8 +191,10 @@ class EncryptionTest : TestCase() {
                 override fun sendPacket(
                     data: ByteArray,
                     encryptionNonce: Array<Int>?,
-                    encryptionKey: SecretKey?
+                    encryptionKey: SecretKey?,
+                    enqueue: Boolean,
                 ) {
+                    TODO("Not yet implemented")
                 }
 
                 override fun initialize() {

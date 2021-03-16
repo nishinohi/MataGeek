@@ -39,7 +39,7 @@ class ConnectionMessageTypesTest : TestCase() {
         // second, (byte)0x 0x2A681932
         val packet = byteArrayOf(0x1B, 0x64, 0x00, 0x65, 0x00, 0x1D, 0x4C,
             0xFA.toByte(), 0x4E, 0x32, 0x19, 0x68, 0x2A)
-        val convert = ConnPacketEncryptCustomANonce.readFromBytePacket(packet)
+        val convert = ConnPacketEncryptCustomANonce(packet)
         assertNotNull(convert)
         assertNotNull(convert?.header)
         assertThat(convert?.header?.sender, `is`(100))
@@ -51,7 +51,7 @@ class ConnectionMessageTypesTest : TestCase() {
     @Test
     fun test_read_ConnPacketHeader() {
         val packet = byteArrayOf(0x1C, 0x65, 0x00, 0x00, 0x7D)
-        val header = ConnPacketHeader.readFromBytePacket(packet)
+        val header = ConnPacketHeader(packet)
         assertNotNull(header)
         assertThat(header?.messageType, `is`(MessageType.ENCRYPT_CUSTOM_DONE))
         assertThat(header?.sender, `is`(101))

@@ -12,8 +12,7 @@ import kotlin.Exception
 class StatusReporterModule : Module("status", ModuleId.STATUS_REPORTER_MODULE.id) {
 
     override fun actionResponseMessageReceivedHandler(packet: ByteArray) {
-        val modulePacket =
-            ConnPacketModule.readFromBytePacket(packet) ?: throw Exception("invalid Message")
+        val modulePacket = ConnPacketModule(packet)
         when (modulePacket.actionType) {
             StatusModuleActionResponseMessages.STATUS.type -> {
                 val statusMessage =

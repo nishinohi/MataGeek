@@ -79,8 +79,7 @@ class MeshAccessManager(context: Context) :
                     MessageType.ENCRYPT_CUSTOM_ANONCE -> {
                         if (encryptionState.value != EncryptionState.ENCRYPTING) return
                         val connPacketEncryptCustomANonce =
-                            ConnPacketEncryptCustomANonce.readFromBytePacket(packet)
-                                ?: throw Exception("invalid message")
+                            ConnPacketEncryptCustomANonce(packet)
                         onANonceReceived(connPacketEncryptCustomANonce)
                     }
                     MessageType.ENCRYPT_CUSTOM_DONE -> {
@@ -91,8 +90,7 @@ class MeshAccessManager(context: Context) :
 //                            PrimitiveTypes.NODE_ID_BROADCAST)
                     }
                     MessageType.SPLIT_WRITE_CMD -> {
-                        val splitPacket = PacketSplitHeader.readFromBytePacket(packet)
-                            ?: throw Exception("invalid message")
+                        val splitPacket = PacketSplitHeader(packet)
                         if (splitPacket.splitCounter.toInt() == 0) messageBuffer.clear()
                         messageBuffer.addAll(packet.copyOfRange(PacketSplitHeader.SIZEOF_PACKET,
                             packet.size).toList())
@@ -107,7 +105,7 @@ class MeshAccessManager(context: Context) :
                     }
                     MessageType.CLUSTER_INFO_UPDATE -> {
                         val clusterInfoUpdate =
-                            ConnPacketClusterInfoUpdate.readFromBytePacket(packet)
+                            ConnPacketClusterInfoUpdate(packet)
                                 ?: throw Exception("invalid message")
                         update(DeviceInfo(clusterInfoUpdate.clusterSizeChange, null))
                     }
@@ -119,8 +117,7 @@ class MeshAccessManager(context: Context) :
         }
 
     fun moduleMessageReceivedHandler(packet: ByteArray) {
-        val modulePacket = ConnPacketModule.readFromBytePacket(packet)
-            ?: throw Exception("mesh Message Error")
+        val modulePacket = ConnPacketModule(packet)
         modules.find { it.moduleId != 0.toByte() && modulePacket.moduleId == it.moduleId }
             ?.actionResponseMessageReceivedHandler(packet)
         val vendorModulePacket = ConnPacketVendorModule(packet)

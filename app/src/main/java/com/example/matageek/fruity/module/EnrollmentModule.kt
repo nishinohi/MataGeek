@@ -1,6 +1,7 @@
 package com.example.matageek.fruity.module
 
 import android.util.Log
+import com.example.matageek.customexception.MessagePacketSizeException
 import com.example.matageek.fruity.types.*
 import no.nordicsemi.android.ble.data.Data
 import java.nio.ByteBuffer
@@ -17,38 +18,52 @@ class EnrollmentModule : Module("enroll", ModuleId.ENROLLMENT_MODULE.id) {
             data, data.size, false)
     }
 
-    class EnrollmentModuleSetEnrollmentBroadcastAppStartMessage(
-        val newNodeIdOffset: Short,
-        val newNetworkId: Short,
-        val newNetworkKey: ByteArray,
-        val newUserBaseKey: ByteArray,
-        val newOrganizationKey: ByteArray,
-        val nodeKey: ByteArray, // Key used to connect to the unenrolled node
-        val timeoutSec: Byte, //how long to try to connect to the unenrolled node, 0 means default time
-    ) : ConnectionMessageTypes {
+    class EnrollmentModuleSetEnrollmentBroadcastAppStartMessage : ConnectionMessageTypes {
+        val newNodeIdOffset: Short
+        val newNetworkId: Short
+        val newNetworkKey: ByteArray
+        val newUserBaseKey: ByteArray
+        val newOrganizationKey: ByteArray
+        val nodeKey: ByteArray // Key used to connect to the unenrolled node
+        val timeoutSec: Byte //how long to try to connect to the unenrolled node, 0 means default time
         val clusterSize: Short = 0
+
+        constructor(
+            newNodeIdOffset: Short, newNetworkId: Short, newNetworkKey: ByteArray,
+            newUserBaseKey: ByteArray, newOrganizationKey: ByteArray, nodeKey: ByteArray,
+            timeoutSec: Byte,
+        ) {
+            this.newNodeIdOffset = newNodeIdOffset
+            this.newNetworkId = newNetworkId
+            this.newNetworkKey = newNetworkKey
+            this.newUserBaseKey = newUserBaseKey
+            this.newOrganizationKey = newOrganizationKey
+            this.nodeKey = nodeKey
+            this.timeoutSec = timeoutSec
+        }
+
+        constructor(packet: ByteArray) {
+            if (packet.size < SIZEOF_PACKET) throw MessagePacketSizeException(this::class.java.toString(),
+                SIZEOF_PACKET)
+            val byteBuffer = getByteBufferWrap(packet)
+            newNodeIdOffset = byteBuffer.short
+            newNetworkId = byteBuffer.short
+            // skip cluster size
+            byteBuffer.short
+            newNetworkKey = ByteArray(FmTypes.SECRET_KEY_LENGTH)
+            byteBuffer.get(newNetworkKey, 0, FmTypes.SECRET_KEY_LENGTH)
+            newUserBaseKey = ByteArray(FmTypes.SECRET_KEY_LENGTH)
+            byteBuffer.get(newUserBaseKey, 0, FmTypes.SECRET_KEY_LENGTH)
+            newOrganizationKey = ByteArray(FmTypes.SECRET_KEY_LENGTH)
+            byteBuffer.get(newOrganizationKey, 0, FmTypes.SECRET_KEY_LENGTH)
+            nodeKey = ByteArray(FmTypes.SECRET_KEY_LENGTH)
+            byteBuffer.get(nodeKey, 0, FmTypes.SECRET_KEY_LENGTH)
+            timeoutSec = byteBuffer.get()
+        }
 
         companion object {
             const val SIZEOF_PACKET = 71
             const val SIZEOF_PACKET_MIN = 6
-            fun readFromBytePacket(bytePacket: ByteArray): EnrollmentModuleSetEnrollmentBroadcastAppStartMessage? {
-                if (bytePacket.size < SIZEOF_PACKET) return null
-                val byteBuffer = ByteBuffer.wrap(bytePacket).order(ByteOrder.LITTLE_ENDIAN)
-                val newNodeIdOffset = byteBuffer.short
-                val newNetworkId = byteBuffer.short
-                val clusterSize = byteBuffer.short
-                val newNetworkKey: ByteArray = ByteArray(FmTypes.SECRET_KEY_LENGTH)
-                byteBuffer.get(newNetworkKey, 0, FmTypes.SECRET_KEY_LENGTH)
-                val newUserBaseKey: ByteArray = ByteArray(FmTypes.SECRET_KEY_LENGTH)
-                byteBuffer.get(newUserBaseKey, 0, FmTypes.SECRET_KEY_LENGTH)
-                val newOrganizationKey: ByteArray = ByteArray(FmTypes.SECRET_KEY_LENGTH)
-                byteBuffer.get(newOrganizationKey, 0, FmTypes.SECRET_KEY_LENGTH)
-                val nodeKey: ByteArray = ByteArray(FmTypes.SECRET_KEY_LENGTH)
-                byteBuffer.get(nodeKey, 0, FmTypes.SECRET_KEY_LENGTH)
-                return EnrollmentModuleSetEnrollmentBroadcastAppStartMessage(
-                    newNodeIdOffset, newNetworkId, newNetworkKey, newUserBaseKey,
-                    newOrganizationKey, nodeKey, byteBuffer.get())
-            }
         }
 
         override fun createBytePacket(): ByteArray {
@@ -117,7 +132,7 @@ class EnrollmentModule : Module("enroll", ModuleId.ENROLLMENT_MODULE.id) {
         if (packet.size < ConnPacketModule.SIZEOF_PACKET + EnrollmentModuleEnrollmentResponse.SIZE_OF_PACKET)
             throw Exception("invalid packet")
 
-        val connModule = ConnPacketModule.readFromBytePacket(packet.copyOfRange(0,
+        val connModule = ConnPacketModule(packet.copyOfRange(0,
             ConnPacketModule.SIZEOF_PACKET)) ?: throw Exception("invalid packet")
 
         val response = packet.copyOfRange(ConnPacketModule.SIZEOF_PACKET,
