@@ -5,7 +5,7 @@ class PrimitiveTypes {
         const val NODE_ID_BROADCAST: Short = 0
         fun getVendorModuleId(vendorId: Short, subId: Byte): Int {
             return (ModuleId.VENDOR_MODULE_ID_PREFIX.id.toUByte().toInt() or
-                    (subId.toInt() shl 8) or (vendorId.toUShort().toInt() shl 16));
+                    (subId.toUByte().toInt() shl 8) or (vendorId.toUShort().toInt() shl 16));
         }
     }
 }

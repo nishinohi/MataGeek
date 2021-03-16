@@ -91,7 +91,7 @@ class MeshAccessManager(context: Context) :
                     }
                     MessageType.SPLIT_WRITE_CMD -> {
                         val splitPacket = PacketSplitHeader(packet)
-                        if (splitPacket.splitCounter.toInt() == 0) messageBuffer.clear()
+                        if (splitPacket.splitCounter == 0.toByte()) messageBuffer.clear()
                         messageBuffer.addAll(packet.copyOfRange(PacketSplitHeader.SIZEOF_PACKET,
                             packet.size).toList())
                     }

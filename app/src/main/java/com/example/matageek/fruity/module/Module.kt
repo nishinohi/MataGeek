@@ -34,7 +34,7 @@ abstract class Module(
     }
 
     private fun isVendorModule(): Boolean {
-        return moduleId.toInt() == 0
+        return moduleId == 0.toByte()
     }
 
     //TODO: reliable is currently not supported and by default false. The input is ignored

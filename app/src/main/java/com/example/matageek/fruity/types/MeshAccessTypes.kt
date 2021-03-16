@@ -3,6 +3,7 @@ package com.example.matageek.fruity.types
 import android.bluetooth.le.ScanRecord
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.experimental.and
 
 class MeshAccessTypes {
     companion object {
@@ -61,7 +62,7 @@ class AdvStructureMeshAccessServiceData {
         byteBuffer.get(data, 0, data.size)
         this.data = AdvStructureServiceDataAndType(data)
         this.networkId = byteBuffer.short
-        val temp = byteBuffer.get().toInt()
+        val temp = byteBuffer.get().toUByte().toInt()
         this.isEnrolled = (temp and 1) == 1
         this.isSink = ((temp shr 1) and 1) == 1
         this.isZeroKeyConnectable = ((temp shr 2) and 1) == 1
@@ -87,19 +88,19 @@ class AdvStructureMeshAccessServiceData {
             if (meshAdv.size < AdvertisingMessageTypes.ADV_PACKET_MAX_SIZE) return false
 
             // check adv data sequence
-            if (meshAdv[0].toInt() != AdvStructureFlags.SIZE_OF_PACKET - 1) return false
-            if (meshAdv[AdvStructureFlags.SIZE_OF_PACKET].toInt() !=
-                AdvStructureUUID16.SIZE_OF_PACKET - 1
+            if (meshAdv[0] != (AdvStructureFlags.SIZE_OF_PACKET - 1).toByte()) return false
+            if (meshAdv[AdvStructureFlags.SIZE_OF_PACKET] !=
+                (AdvStructureUUID16.SIZE_OF_PACKET - 1).toByte()
             ) return false
             if (meshAdv[AdvStructureFlags.SIZE_OF_PACKET + AdvStructureUUID16.SIZE_OF_PACKET]
-                    .toInt() != AdvStructureMeshAccessServiceData.SIZE_OF_PACKET - 1
+                != (SIZE_OF_PACKET - 1).toByte()
             ) return false
 
             val advStructureMeshAccessServiceData =
                 AdvStructureMeshAccessServiceData(meshAdv.copyOfRange(AdvStructureFlags.SIZE_OF_PACKET
                         + AdvStructureUUID16.SIZE_OF_PACKET,
                     AdvStructureFlags.SIZE_OF_PACKET + AdvStructureUUID16.SIZE_OF_PACKET +
-                            AdvStructureMeshAccessServiceData.SIZE_OF_PACKET))
+                            SIZE_OF_PACKET))
             return advStructureMeshAccessServiceData.data.messageType == ServiceDataMessageType.MESH_ACCESS.type
         }
     }

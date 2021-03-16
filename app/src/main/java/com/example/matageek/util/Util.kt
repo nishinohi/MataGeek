@@ -2,6 +2,7 @@ package com.example.matageek.util
 
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import kotlin.experimental.xor
 
 class Util {
     companion object {
@@ -20,7 +21,7 @@ class Util {
             val dist = ByteArray(length)
             for (ii in 0 until length) {
                 dist[ii] =
-                    ((src[ii + offsetSrc]).toInt() xor (xor[ii + offsetXor]).toInt()).toByte()
+                    ((src[ii + offsetSrc]) xor (xor[ii + offsetXor]))
             }
             return dist
         }
