@@ -1,5 +1,6 @@
 package com.example.matageek
 
+import android.bluetooth.BluetoothClass
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -15,21 +16,25 @@ import com.example.matageek.adapter.DiscoveredDevice
 import com.example.matageek.databinding.ActivityDeviceActivatedBinding
 import com.example.matageek.dialog.DialogDeviceNameEdit
 import com.example.matageek.fragment.DeviceActivatedFragment
+import com.example.matageek.fragment.DeviceNonActivatedFragment
 import com.example.matageek.manager.DeviceInfo
 import com.example.matageek.manager.MeshAccessManager
 import com.example.matageek.viewmodels.AbstractDeviceConfigViewModel
 import com.example.matageek.viewmodels.DeviceActivatedViewModel
+import com.example.matageek.viewmodels.DeviceNonActivatedViewModel
 import no.nordicsemi.android.ble.livedata.state.ConnectionState
 import no.nordicsemi.android.ble.observer.ConnectionObserver
 
 class DeviceManageActivity : AppCompatActivity(),
     DeviceActivatedFragment.OnDeviceInfoUpdatedListener,
+    DeviceNonActivatedFragment.OnDeviceInfoUpdatedListener,
     DialogDeviceNameEdit.NoticeDeviceConfigListener {
     private lateinit var _bind: ActivityDeviceActivatedBinding
     private val bind get() = _bind
     private val deviceActivatedViewModel: DeviceActivatedViewModel by viewModels()
+    private val deviceNonActivatedViewModel: DeviceNonActivatedViewModel by viewModels()
+    private lateinit var currentViewModel: AbstractDeviceConfigViewModel
     lateinit var deviceNamePreferences: SharedPreferences
-    private val fragment = DeviceActivatedFragment()
     private lateinit var discoveredDevice: DiscoveredDevice
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,25 +53,31 @@ class DeviceManageActivity : AppCompatActivity(),
         supportActionBar?.title = "Device Manager"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         // connect device
-        deviceActivatedViewModel.connect(discoveredDevice)
+        currentViewModel =
+            if (isActivated()) deviceActivatedViewModel else deviceNonActivatedViewModel
+        currentViewModel.connect(discoveredDevice)
         // set observer
-        deviceActivatedViewModel.connectionState.observe(this, {
+        currentViewModel.connectionState.observe(this, {
             onConnectionUpdated(it)
         })
-        deviceActivatedViewModel.handShakeState.observe(this, {
+        currentViewModel.handShakeState.observe(this, {
             onHandShakeUpdated(it)
         })
     }
 
+    private fun isActivated(): Boolean {
+        return discoveredDevice.enrolled
+    }
+
     override fun onBackPressed() {
-        deviceActivatedViewModel.disconnect()
+        currentViewModel.disconnect()
         super.onBackPressed()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                deviceActivatedViewModel.disconnect()
+                currentViewModel.disconnect()
             }
         }
         return super.onOptionsItemSelected(item)
@@ -86,7 +97,7 @@ class DeviceManageActivity : AppCompatActivity(),
                 Log.d("MATAG", "onCreate: INITIALIZING")
             }
             ConnectionState.State.READY -> {
-                deviceActivatedViewModel.startHandShake()
+                currentViewModel.startHandShake()
             }
             ConnectionState.State.DISCONNECTING -> {
                 Log.d("MATAG", "onCreate: DISCONNECTING")
@@ -113,7 +124,8 @@ class DeviceManageActivity : AppCompatActivity(),
             MeshAccessManager.HandShakeState.HANDSHAKE_DONE -> {
                 bind.connectingGroup.visibility = View.GONE
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
-                fragmentTransaction.add(R.id.activated_device_fragment, fragment)
+                fragmentTransaction.add(R.id.activated_device_fragment,
+                    if (discoveredDevice.enrolled) DeviceActivatedFragment() else DeviceNonActivatedFragment())
                 fragmentTransaction.commit()
             }
         }
@@ -127,13 +139,13 @@ class DeviceManageActivity : AppCompatActivity(),
 
     override fun onDeviceInfoUpdated() {
         deviceNamePreferences.getString(discoveredDevice.device.address, "unknown")?.let {
-            deviceActivatedViewModel.deviceNameUpdate(it)
+            currentViewModel.update(DeviceInfo(null, null, null, it))
         }
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment, deviceName: String) {
         deviceNamePreferences.edit().putString(discoveredDevice.device.address, deviceName).apply()
-        deviceActivatedViewModel.deviceNameUpdate(deviceName)
+        currentViewModel.update(DeviceInfo(null, null, null, deviceName))
     }
 
     override fun onDialogNegativeClick(dialog: DialogFragment) {

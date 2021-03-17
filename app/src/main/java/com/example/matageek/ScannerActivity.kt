@@ -25,8 +25,7 @@ class ScannerActivity : AppCompatActivity() {
         scannerViewModel.scannerLiveData.observe(this, this::startScan)
         val adapter = DevicesAdapter {
             Log.d("MATAG", "onCreate: $it")
-            Intent(this,
-                if (it.enrolled) DeviceManageActivity::class.java else DeviceConfigActivity::class.java).apply {
+            Intent(this, DeviceManageActivity::class.java).apply {
                 putExtra(DeviceConfigActivity.EXTRA_DEVICE, it)
                 startActivity(this)
             }

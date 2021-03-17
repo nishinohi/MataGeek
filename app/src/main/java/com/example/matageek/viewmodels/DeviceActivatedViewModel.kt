@@ -9,7 +9,6 @@ import com.example.matageek.fruity.types.VendorModuleId
 class DeviceActivatedViewModel(application: Application) :
     AbstractDeviceConfigViewModel(application) {
 
-    val deviceName: MutableLiveData<String> = MutableLiveData()
     val clusterSize = meshAccessManager.clusterSize
     val battery = meshAccessManager.batteryInfo
     val trapState = meshAccessManager.trapState
@@ -27,10 +26,6 @@ class DeviceActivatedViewModel(application: Application) :
             MatageekModule.MatageekModuleTriggerActionMessages.MODE_CHANGE.type,
             PrimitiveTypes.NODE_ID_BROADCAST, data.createBytePacket(),
             MatageekModule.MatageekModuleModeChangeMessage.SIZEOF_PACKET)
-    }
-
-    fun deviceNameUpdate(deviceName: String) {
-        this.deviceName.postValue(deviceName)
     }
 
 }
