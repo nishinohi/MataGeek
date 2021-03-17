@@ -6,9 +6,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
+import com.example.matageek.R
 import com.example.matageek.databinding.FragmentDeviceActivatedBinding
 import com.example.matageek.dialog.DialogDeviceNameEdit
 import com.example.matageek.fruity.module.MatageekModule
@@ -37,6 +39,8 @@ class DeviceActivatedFragment : Fragment() {
         })
         deviceActivatedViewModel.trapState.observe(viewLifecycleOwner, {
             bind.activatedTrapState.text = if (it) "Fired" else "Not Fired"
+            bind.icActivatedTrapState.drawable.setTint(ContextCompat.getColor(requireContext(),
+                if (it) R.color.trap_fired else R.color.trap_not_fired))
         })
         deviceActivatedViewModel.mode.observe(viewLifecycleOwner, {
             bind.matageekMode.text =
