@@ -6,8 +6,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import com.example.matageek.databinding.FragmentDeviceActivatedBinding
+import com.example.matageek.dialog.DialogDeviceNameEdit
 import com.example.matageek.fruity.module.MatageekModule
 import com.example.matageek.viewmodels.DeviceActivatedViewModel
 
@@ -42,6 +45,10 @@ class DeviceActivatedFragment : Fragment() {
                 if (it == MatageekModule.MatageekMode.SETUP) "START DETECT" else "STOP DETECT"
         })
         // button handler
+        bind.icActivatedDeviceNameEdit.setOnClickListener {
+            val deviceNameEdit = DialogDeviceNameEdit()
+            deviceNameEdit.show(childFragmentManager, "test")
+        }
         bind.modeChangeButton.setOnClickListener {
             deviceActivatedViewModel.sendMatageekModeChangeMessage()
         }

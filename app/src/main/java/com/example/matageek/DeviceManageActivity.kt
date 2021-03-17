@@ -10,8 +10,10 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
+import androidx.fragment.app.DialogFragment
 import com.example.matageek.adapter.DiscoveredDevice
 import com.example.matageek.databinding.ActivityDeviceActivatedBinding
+import com.example.matageek.dialog.DialogDeviceNameEdit
 import com.example.matageek.fragment.DeviceActivatedFragment
 import com.example.matageek.manager.DeviceInfo
 import com.example.matageek.manager.MeshAccessManager
@@ -21,7 +23,8 @@ import no.nordicsemi.android.ble.livedata.state.ConnectionState
 import no.nordicsemi.android.ble.observer.ConnectionObserver
 
 class DeviceManageActivity : AppCompatActivity(),
-    DeviceActivatedFragment.OnDeviceInfoUpdatedListener {
+    DeviceActivatedFragment.OnDeviceInfoUpdatedListener,
+    DialogDeviceNameEdit.NoticeDeviceConfigListener {
     private lateinit var _bind: ActivityDeviceActivatedBinding
     private val bind get() = _bind
     private val deviceActivatedViewModel: DeviceActivatedViewModel by viewModels()
@@ -126,6 +129,14 @@ class DeviceManageActivity : AppCompatActivity(),
         deviceActivatedViewModel.deviceName.postValue(
             deviceNamePreferences.getString(discoveredDevice.device.address, "unknown")
         )
+    }
+
+    override fun onDialogPositiveClick(dialog: DialogFragment, deviceName: String) {
+        deviceNamePreferences.edit().putString(discoveredDevice.device.address, deviceName).apply()
+        deviceActivatedViewModel.deviceName.postValue(deviceName)
+    }
+
+    override fun onDialogNegativeClick(dialog: DialogFragment) {
     }
 
 }
