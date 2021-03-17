@@ -1,6 +1,8 @@
 package com.example.matageek
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.res.Resources
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,61 +14,69 @@ import androidx.fragment.app.DialogFragment
 import com.example.matageek.adapter.DiscoveredDevice
 import com.example.matageek.databinding.ActivityDeviceConfigBinding
 import com.example.matageek.dialog.DialogDeviceNameEdit
-import com.example.matageek.viewmodels.DeviceConfigViewModel
+import com.example.matageek.fragment.DeviceActivatedFragment
+import com.example.matageek.fragment.DeviceNonActivatedFragment
+import com.example.matageek.manager.DeviceInfo
+import com.example.matageek.manager.MeshAccessManager
+import com.example.matageek.viewmodels.AbstractDeviceConfigViewModel
+import com.example.matageek.viewmodels.DeviceActivatedViewModel
+import com.example.matageek.viewmodels.DeviceNonActivatedViewModel
 import no.nordicsemi.android.ble.livedata.state.ConnectionState
 import no.nordicsemi.android.ble.observer.ConnectionObserver
 
-class DeviceConfigActivity : AppCompatActivity(), DialogDeviceNameEdit.NoticeDeviceConfigListener {
+class DeviceConfigActivity : AppCompatActivity(),
+    DeviceActivatedFragment.OnDeviceInfoUpdatedListener,
+    DeviceNonActivatedFragment.OnDeviceInfoUpdatedListener,
+    DialogDeviceNameEdit.NoticeDeviceConfigListener {
     private lateinit var _bind: ActivityDeviceConfigBinding
     private val bind get() = _bind
-    private lateinit var deviceConfigViewModel: DeviceConfigViewModel
+    private val deviceActivatedViewModel: DeviceActivatedViewModel by viewModels()
+    private val deviceNonActivatedViewModel: DeviceNonActivatedViewModel by viewModels()
+    private lateinit var currentViewModel: AbstractDeviceConfigViewModel
+    lateinit var deviceNamePreferences: SharedPreferences
+    private lateinit var discoveredDevice: DiscoveredDevice
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _bind = ActivityDeviceConfigBinding.inflate(layoutInflater)
         setContentView(bind.root)
-        val discoveredDevice: DiscoveredDevice = intent.getParcelableExtra(EXTRA_DEVICE)
-            ?: throw Resources.NotFoundException("device")
-        setSupportActionBar(bind.deviceConfigToolBar)
-        supportActionBar?.title = "Mesh"
+        // load setting
+        deviceNamePreferences = getSharedPreferences(getString(R.string.preference_device_name_key),
+            Context.MODE_PRIVATE)
+        // get bundle
+        discoveredDevice =
+            intent.getParcelableExtra(AbstractDeviceConfigViewModel.EXTRA_DEVICE)
+                ?: throw Resources.NotFoundException("device")
+        // action bar enable back press
+        setSupportActionBar(bind.deviceManageToolBar)
+        supportActionBar?.title = "Device Manager"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        val deviceConfigViewModel: DeviceConfigViewModel by viewModels()
-        this.deviceConfigViewModel = deviceConfigViewModel
-        deviceConfigViewModel.connect(discoveredDevice)
-        deviceConfigViewModel.connectionState.observe(this, {
+        // connect device
+        currentViewModel =
+            if (isActivated()) deviceActivatedViewModel else deviceNonActivatedViewModel
+        currentViewModel.connect(discoveredDevice)
+        // set observer
+        currentViewModel.connectionState.observe(this, {
             onConnectionUpdated(it)
         })
-        deviceConfigViewModel.deviceName.observe(this, {
-            bind.deviceName.text = it
+        currentViewModel.handShakeState.observe(this, {
+            onHandShakeUpdated(it)
         })
-        deviceConfigViewModel.clusterSize.observe(this, {
-            bind.clusterSize.text = it.toString()
-        })
-        deviceConfigViewModel.battery.observe(this, {
-            bind.battery.text = "$it%"
-        })
+    }
 
-        // set Activate Button handler
-        bind.activate.setOnClickListener {
-            deviceConfigViewModel.sendEnrollmentBroadcastAppStart()
-        }
-        bind.icDeviceNameEdit.setOnClickListener {
-            val deviceNameConfigDialog = DialogDeviceNameEdit()
-            deviceNameConfigDialog.show(supportFragmentManager, "test")
-        }
+    private fun isActivated(): Boolean {
+        return discoveredDevice.enrolled
     }
 
     override fun onBackPressed() {
-        deviceConfigViewModel.disconnect()
+        currentViewModel.disconnect()
         super.onBackPressed()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            // pressed action bar back button
             android.R.id.home -> {
-                deviceConfigViewModel.disconnect()
+                currentViewModel.disconnect()
             }
         }
         return super.onOptionsItemSelected(item)
@@ -86,10 +96,7 @@ class DeviceConfigActivity : AppCompatActivity(), DialogDeviceNameEdit.NoticeDev
                 Log.d("MATAG", "onCreate: INITIALIZING")
             }
             ConnectionState.State.READY -> {
-                bind.deviceConfigGroup.visibility = View.VISIBLE
-                bind.connectingGroup.visibility = View.GONE
-                deviceConfigViewModel.startHandShake()
-                deviceConfigViewModel.loadDeviceName()
+                currentViewModel.startHandShake()
             }
             ConnectionState.State.DISCONNECTING -> {
                 Log.d("MATAG", "onCreate: DISCONNECTING")
@@ -107,21 +114,45 @@ class DeviceConfigActivity : AppCompatActivity(), DialogDeviceNameEdit.NoticeDev
         }
     }
 
+    private fun onHandShakeUpdated(handShakeState: MeshAccessManager.HandShakeState) {
+        when (handShakeState) {
+            MeshAccessManager.HandShakeState.HANDSHAKING -> {
+                showConnectingStatus(R.string.handshake_state_handshaking)
+                Log.d("MATAG", "onCreate: CONNECTING")
+            }
+            MeshAccessManager.HandShakeState.HANDSHAKE_DONE -> {
+                bind.connectingGroup.visibility = View.GONE
+                val fragmentTransaction = supportFragmentManager.beginTransaction()
+                fragmentTransaction.add(R.id.activated_device_fragment,
+                    if (discoveredDevice.enrolled) DeviceActivatedFragment() else DeviceNonActivatedFragment())
+                fragmentTransaction.commit()
+            }
+        }
+    }
+
+
     private fun showConnectingStatus(stringId: Int) {
-        bind.deviceConfigGroup.visibility = View.GONE
         bind.connectingGroup.visibility = View.VISIBLE
         bind.connectingText.setText(stringId)
+    }
+
+    override fun onDeviceInfoUpdated() {
+        deviceNamePreferences.getString(discoveredDevice.device.address, "unknown")?.let {
+            currentViewModel.update(DeviceInfo(null, null, null, it))
+        }
+    }
+
+    override fun onDialogPositiveClick(dialog: DialogFragment, deviceName: String) {
+        deviceNamePreferences.edit().putString(discoveredDevice.device.address, deviceName).apply()
+        currentViewModel.update(DeviceInfo(null, null, null, deviceName))
+    }
+
+    override fun onDialogNegativeClick(dialog: DialogFragment) {
     }
 
     companion object {
         const val EXTRA_DEVICE: String = "com.matageek.EXTRA_DEVICE"
     }
 
-    override fun onDialogPositiveClick(dialog: DialogFragment, deviceName: String) {
-        if (deviceName.isEmpty()) return
-        deviceConfigViewModel.setDeviceName(deviceName)
-    }
 
-    override fun onDialogNegativeClick(dialog: DialogFragment) {
-    }
 }

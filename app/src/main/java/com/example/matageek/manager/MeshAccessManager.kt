@@ -248,7 +248,6 @@ class MeshAccessManager(context: Context) :
 
         /** TX characteristic UUID (use for receive packet from peripheral) */
         val MA_UUID_TX_CHAR: UUID = UUID.fromString("00000003-acce-423c-93fd-0c07a0051858")
-
     }
 
 }
