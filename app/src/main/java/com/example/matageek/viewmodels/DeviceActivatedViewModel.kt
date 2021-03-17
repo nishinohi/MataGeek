@@ -29,4 +29,8 @@ class DeviceActivatedViewModel(application: Application) :
             MatageekModule.MatageekModuleModeChangeMessage.SIZEOF_PACKET)
     }
 
+    fun deviceNameUpdate(deviceName: String) {
+        this.deviceName.postValue(deviceName)
+    }
+
 }

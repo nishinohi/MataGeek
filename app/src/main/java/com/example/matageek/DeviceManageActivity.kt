@@ -126,14 +126,14 @@ class DeviceManageActivity : AppCompatActivity(),
     }
 
     override fun onDeviceInfoUpdated() {
-        deviceActivatedViewModel.deviceName.postValue(
-            deviceNamePreferences.getString(discoveredDevice.device.address, "unknown")
-        )
+        deviceNamePreferences.getString(discoveredDevice.device.address, "unknown")?.let {
+            deviceActivatedViewModel.deviceNameUpdate(it)
+        }
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment, deviceName: String) {
         deviceNamePreferences.edit().putString(discoveredDevice.device.address, deviceName).apply()
-        deviceActivatedViewModel.deviceName.postValue(deviceName)
+        deviceActivatedViewModel.deviceNameUpdate(deviceName)
     }
 
     override fun onDialogNegativeClick(dialog: DialogFragment) {
