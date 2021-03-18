@@ -96,6 +96,7 @@ class DeviceConfigActivity : AppCompatActivity(),
                 Log.d("MATAG", "onCreate: INITIALIZING")
             }
             ConnectionState.State.READY -> {
+                bind.deviceConfigGroup.visibility = View.VISIBLE
                 currentViewModel.startHandShake()
             }
             ConnectionState.State.DISCONNECTING -> {
@@ -129,7 +130,6 @@ class DeviceConfigActivity : AppCompatActivity(),
             }
         }
     }
-
 
     private fun showConnectingStatus(stringId: Int) {
         bind.connectingGroup.visibility = View.VISIBLE
