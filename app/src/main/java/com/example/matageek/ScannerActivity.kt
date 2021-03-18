@@ -42,7 +42,7 @@ class ScannerActivity : AppCompatActivity() {
         }
     }
 
-    fun checkPermission() {
+    private fun checkPermission() {
         val requestPermissionLauncher =
             registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permission ->
                 permission.forEach {
