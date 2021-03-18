@@ -30,4 +30,9 @@
     <string name="device_info">Device Info</string>
     <string name="matageek_mode">Mode</string>
     <string name="mesh_info">Mesh Info</string>
+    <string name="bluetooth_disabled">BLUETOOTH DISABLED</string>
+    <string name="bluetooth_require_explain">Matageek requires bluetooth function</string>
+    <string name="bluetooth_enable">Enable</string>
+    <string name="bluetooth_denied_permission">BLUETOOTH PERMISSION DENIED</string>
+    <string name="bluetooth_permission_explain">Matageek requires bluetooth permission</string>
 </resources>

@@ -36,12 +36,14 @@
         android:paddingTop="@dimen/activity_vertical_margin_top"
         android:paddingBottom="@dimen/activity_vertical_margin_bottom"
         android:scrollbars="none"
-        tools:listitem="@layout/device_item"
+        android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scanner_bar_layout" />
+        app:layout_constraintTop_toBottomOf="@id/scanner_bar_layout"
+        tools:listitem="@layout/device_item"
+        tools:visibility="visible" />
 
     <include
         android:id="@+id/bluetooth_disable"
@@ -52,7 +54,19 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scanner_bar_layout" />
+        app:layout_constraintTop_toBottomOf="@id/scanner_bar_layout"
+        tools:visibility="gone" />
 
+    <include
+        android:id="@+id/bluetooth_permission_denied"
+        layout="@layout/info_no_bluetooth_permission"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scanner_bar_layout"
+        tools:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

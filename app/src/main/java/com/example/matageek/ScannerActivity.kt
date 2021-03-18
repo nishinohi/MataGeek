@@ -1,74 +1,133 @@
 package com.example.matageek
 
 import android.Manifest
+import android.app.Activity
+import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.view.View
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import com.example.matageek.adapter.DevicesAdapter
 import com.example.matageek.databinding.ActivityScannerBinding
-import com.example.matageek.viewmodels.ScannerStateLiveData
 import com.example.matageek.viewmodels.ScannerViewModel
 
 class ScannerActivity : AppCompatActivity() {
     private lateinit var scannerViewModel: ScannerViewModel
-    private lateinit var _binding: ActivityScannerBinding
-    private val binding get() = _binding
+    private lateinit var _bind: ActivityScannerBinding
+    private val bind get() = _bind
+    private val requestPermissions: List<String> =
+        arrayListOf(Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN)
+    private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _binding = ActivityScannerBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        _bind = ActivityScannerBinding.inflate(layoutInflater)
+        setContentView(bind.root)
 
         val scannerViewModel: ScannerViewModel by viewModels()
         this.scannerViewModel = scannerViewModel
-        checkPermission()
 
+        // set recycle adapter
         val adapter = DevicesAdapter {
             Intent(this, DeviceConfigActivity::class.java).apply {
                 putExtra(DeviceConfigActivity.EXTRA_DEVICE, it)
                 startActivity(this)
             }
         }
-        binding.scannedDeviceList.adapter = adapter
+        bind.scannedDeviceList.adapter = adapter
+        // set live data observer
         scannerViewModel.devicesLiveData.observe(this) {
             it?.let {
                 adapter.submitList(it)
             }
         }
+        scannerViewModel.bluetoothState.observe(this) {
+            it?.let {
+                switchContentsVisibility(it, scannerViewModel.getDeniedPermission())
+                switchScanner(it, scannerViewModel.getDeniedPermission())
+            }
+        }
+        scannerViewModel.deniedPermissionState.observe(this) {
+            switchContentsVisibility(scannerViewModel.isBleEnable(), it)
+            switchScanner(scannerViewModel.isBleEnable(), it)
+        }
+        scannerViewModel.scannerLiveData.observe(this, {
+//            scannerViewModel.startScan()
+        })
+        // permission check
+        permissionLauncher = registerPermissionLauncher()
+        scannerViewModel.updateDeniedPermission(checkDeniedPermission(requestPermissions))
+        // set on button handler
+        val bleEnableLauncher = registerBleEnableSubActivity()
+        bind.bluetoothDisable.actionEnableBluetooth.setOnClickListener {
+            bleEnableLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+        }
+        bind.bluetoothPermissionDenied.actionEnableBluetoothPermission.setOnClickListener {
+            scannerViewModel.getDeniedPermission()?.let {
+                permissionLauncher.launch(it.toTypedArray())
+            }
+        }
     }
 
-    private fun checkPermission() {
-        val requestPermissionLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permission ->
-                permission.forEach {
-                    if (it.value == null || !it.value) return@registerForActivityResult
-                }
-                startScanner()
-            }
+    private fun switchContentsVisibility(isBleEnabled: Boolean, deniedPermissions: List<String>?) {
+        if (!isBleEnabled) {
+            bind.scannedDeviceList.visibility = View.GONE
+            bind.bluetoothDisable.root.visibility = View.VISIBLE
+            bind.bluetoothPermissionDenied.root.visibility = View.GONE
+            return
+        }
+        if (deniedPermissions?.isNotEmpty() == true) {
+            bind.scannedDeviceList.visibility = View.GONE
+            bind.bluetoothDisable.root.visibility = View.GONE
+            bind.bluetoothPermissionDenied.root.visibility = View.VISIBLE
+            return
+        }
+        bind.scannedDeviceList.visibility = View.VISIBLE
+        bind.bluetoothDisable.root.visibility = View.GONE
+    }
 
-        val requestPermissions = arrayListOf(Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN)
+    private fun registerBleEnableSubActivity(): ActivityResultLauncher<Intent> {
+        return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                scannerViewModel.enableBle()
+            } else {
+                scannerViewModel.disableBle()
+            }
+        }
+    }
+
+    private fun registerPermissionLauncher(): ActivityResultLauncher<Array<String>> {
+        return registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permission ->
+            val deniedPermission: MutableList<String> = mutableListOf()
+            permission.forEach {
+                if (it.value == null || !it.value) deniedPermission.add(it.key)
+            }
+            scannerViewModel.updateDeniedPermission(deniedPermission)
+        }
+    }
+
+    private fun checkDeniedPermission(permissions: List<String>): List<String> {
         val deniedPermissions = mutableListOf<String>()
-        requestPermissions.forEach {
+        permissions.forEach {
             if (ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED) {
                 deniedPermissions.add(it)
             }
         }
-        if (deniedPermissions.isEmpty()) {
-            startScanner()
-            return
-        }
-        requestPermissionLauncher.launch(deniedPermissions.toTypedArray())
+        return deniedPermissions.toList()
     }
 
-    private fun startScanner() {
-        scannerViewModel.scannerLiveData.observe(this, {
+    private fun switchScanner(isBleEnabled: Boolean, deniedPermissions: List<String>?) {
+        if (isBleEnabled && deniedPermissions?.isEmpty() == true) {
             scannerViewModel.startScan()
-        })
+        } else {
+            scannerViewModel.stopScan()
+        }
     }
+
 }

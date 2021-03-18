@@ -3,8 +3,6 @@ package com.example.matageek.viewmodels
 import androidx.lifecycle.LiveData
 
 class ScannerStateLiveData(
-    private var locationEnabled: Boolean,
-    private var bluetoothEnabled: Boolean,
 ) : LiveData<ScannerStateLiveData>() {
     private var hasRecord: Boolean = false
 
@@ -24,12 +22,6 @@ class ScannerStateLiveData(
     /* package */
     fun scanningStopped() {
         isScanning = false
-        postValue(this)
-    }
-
-    /* package */
-    fun bluetoothEnabled() {
-        bluetoothEnabled = true
         postValue(this)
     }
 
