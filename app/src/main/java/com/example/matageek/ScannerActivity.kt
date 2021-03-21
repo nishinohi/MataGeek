@@ -24,7 +24,6 @@ import com.example.matageek.databinding.ActivityScannerBinding
 import com.example.matageek.viewmodels.ScannerViewModel
 
 class ScannerActivity : AppCompatActivity() {
-    //    private lateinit var scannerViewModel: ScannerViewModel
     val scannerViewModel: ScannerViewModel by viewModels()
     private lateinit var _bind: ActivityScannerBinding
     private val bind get() = _bind
