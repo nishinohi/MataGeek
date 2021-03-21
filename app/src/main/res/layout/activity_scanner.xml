@@ -46,8 +46,8 @@
         tools:visibility="visible" />
 
     <include
-        android:id="@+id/bluetooth_disable"
-        layout="@layout/info_no_bluetooth"
+        android:id="@+id/setting_disable"
+        layout="@layout/info_no_setting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"
@@ -58,8 +58,8 @@
         tools:visibility="gone" />
 
     <include
-        android:id="@+id/bluetooth_permission_denied"
-        layout="@layout/info_no_bluetooth_permission"
+        android:id="@+id/permission_denied_layout"
+        layout="@layout/info_no_permission"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"

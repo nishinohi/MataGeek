@@ -7,6 +7,8 @@ import android.bluetooth.le.*
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import android.os.Handler
 import android.util.Log
 import androidx.core.content.ContextCompat
@@ -21,23 +23,21 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
         val manager = application.getSystemService(BluetoothManager::class.java)
         manager.adapter
     }
-    private val scanner: BluetoothLeScanner = bleAdapter.bluetoothLeScanner
+    private var scanner: BluetoothLeScanner? = bleAdapter.bluetoothLeScanner
     val scannerLiveData: ScannerStateLiveData = ScannerStateLiveData()
     val bluetoothState: MutableLiveData<Boolean> = MutableLiveData()
-    val devicesLiveData: DevicesLiveData = DevicesLiveData(true, false)
     val deniedPermissionState: MutableLiveData<List<String>> = MutableLiveData()
-
-    init {
-        bluetoothState.postValue(bleAdapter.isEnabled)
-    }
+    val gpsState: MutableLiveData<Boolean> = MutableLiveData()
+    val devicesLiveData: DevicesLiveData = DevicesLiveData(true, false)
+    private val locationManager = application.getSystemService(LocationManager::class.java)
 
     fun refresh() {
         scannerLiveData.refresh()
     }
 
     fun startScan() {
-        if (scannerLiveData.isScanning) return
-        val scanSettings = ScanSettings.Builder().apply {
+        if (scannerLiveData.isScanning || scanner == null) return
+        ScanSettings.Builder().apply {
             setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             setReportDelay(500)
         }.build()
@@ -47,18 +47,19 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
 //            scanner?.stopScan(onScanResult)
 //        }, SCAN_PERIOD)
 
-        scanner.startScan(onScanResult)
+        scanner!!.startScan(onScanResult)
         scannerLiveData.scanningStarted()
     }
 
     fun stopScan() {
         if (scannerLiveData.isScanning && BluetoothAdapter.getDefaultAdapter().isEnabled) {
-            scanner.stopScan(onScanResult)
+            scanner?.stopScan(onScanResult)
         }
     }
 
     fun enableBle() {
         bluetoothState.postValue(true)
+        if (scanner == null) scanner = bleAdapter.bluetoothLeScanner
     }
 
     fun disableBle() {
@@ -67,6 +68,27 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
 
     fun isBleEnable(): Boolean {
         return bluetoothState.value == true
+    }
+
+    fun updateBleState() {
+        if (bleAdapter.isEnabled) enableBle() else disableBle()
+    }
+
+    fun enableGps() {
+        gpsState.postValue(true)
+    }
+
+    fun disableGps() {
+        gpsState.postValue(false)
+    }
+
+    fun isGpsEnable(): Boolean {
+        return gpsState.value == true
+    }
+
+    fun updateGpsState() {
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) enableGps()
+        else disableGps()
     }
 
     fun updateDeniedPermission(deniedPermissions: List<String>) {

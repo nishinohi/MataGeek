@@ -33,6 +33,11 @@
     <string name="bluetooth_disabled">BLUETOOTH DISABLED</string>
     <string name="bluetooth_require_explain">Matageek requires bluetooth function</string>
     <string name="bluetooth_enable">Enable</string>
+    <string name="gps_disabled">GPS DISABLED</string>
+    <string name="gps_require_explain">Matageek requires gps function</string>
+    <string name="gps_enable">Enable</string>
     <string name="bluetooth_denied_permission">BLUETOOTH PERMISSION DENIED</string>
     <string name="bluetooth_permission_explain">Matageek requires bluetooth permission</string>
+    <string name="gps_denied_permission">GPS PERMISSION DENIED</string>
+    <string name="gps_permission_explain">Matageek requires gps permission</string>
 </resources>
