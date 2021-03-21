@@ -31,50 +31,32 @@ class ScannerActivity : AppCompatActivity() {
     private val requestPermissions: List<String> =
         arrayListOf(Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN)
-    private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _bind = ActivityScannerBinding.inflate(layoutInflater)
         setContentView(bind.root)
-        // set recycle adapter
-        val adapter = DevicesAdapter {
-            Intent(this, DeviceConfigActivity::class.java).apply {
-                putExtra(DeviceConfigActivity.EXTRA_DEVICE, it)
-                startActivity(this)
-            }
-        }
-        bind.scannedDeviceList.adapter = adapter
+        // set recycle view adapter and recycle list observer
+        setRecycleViewAdapter()
         // set live data observer
-        scannerViewModel.devicesLiveData.observe(this) {
-            it?.let {
-                adapter.submitList(it)
-            }
-        }
-        scannerViewModel.bluetoothState.observe(this) {
-            switchContentsVisibility(
-                it, scannerViewModel.isGpsEnable(), scannerViewModel.getDeniedPermission())
-            switchScanner(
-                it, scannerViewModel.isGpsEnable(), scannerViewModel.getDeniedPermission())
-        }
-        scannerViewModel.gpsState.observe(this, {
-            switchContentsVisibility(
-                scannerViewModel.isBleEnable(), it, scannerViewModel.getDeniedPermission())
-            switchScanner(
-                scannerViewModel.isBleEnable(), it, scannerViewModel.getDeniedPermission())
-        })
-        scannerViewModel.deniedPermissionState.observe(this) {
-            switchContentsVisibility(
-                scannerViewModel.isBleEnable(), scannerViewModel.isGpsEnable(), it)
-            switchScanner(scannerViewModel.isBleEnable(), scannerViewModel.isGpsEnable(), it)
-        }
-        scannerViewModel.scannerLiveData.observe(this, {
-//            scannerViewModel.startScan()
-        })
+        setLivedataObserver()
         // permission check
-        permissionLauncher = registerPermissionLauncher()
         scannerViewModel.updateDeniedPermission(checkDeniedPermission(requestPermissions))
-        // set on button handler
+        // set button handler
+        setButtonHandler()
+        // register broadcast receiver
+        registerBleStateBroadcastReceiver()
+        registerGpsStateBroadcastReceiver()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        scannerViewModel.updateGpsState()
+        scannerViewModel.updateBleState()
+    }
+
+    private fun setButtonHandler() {
+        val permissionLauncher = registerPermissionLauncher()
         val bleEnableLauncher = registerLaunchSubActivity(
             { scannerViewModel.enableBle() }, { scannerViewModel.disableBle() })
         bind.settingDisable.actionEnableBluetooth.setOnClickListener {
@@ -96,15 +78,46 @@ class ScannerActivity : AppCompatActivity() {
                 permissionLauncher.launch(it.toTypedArray())
             }
         }
-        // register broadcast receiver
-        registerBleStateBroadcastReceiver()
-        registerGpsStateBroadcastReceiver()
     }
 
-    override fun onResume() {
-        super.onResume()
-        scannerViewModel.updateGpsState()
-        scannerViewModel.updateBleState()
+    private fun setRecycleViewAdapter() {
+        // set recycle adapter
+        val adapter = DevicesAdapter {
+            Intent(this, DeviceConfigActivity::class.java).apply {
+                putExtra(DeviceConfigActivity.EXTRA_DEVICE, it)
+                startActivity(this)
+            }
+        }
+        bind.scannedDeviceList.adapter = adapter
+        scannerViewModel.devicesLiveData.observe(this) {
+            it?.let {
+                adapter.submitList(it)
+            }
+        }
+    }
+
+    private fun setLivedataObserver() {
+        // set live data observer
+        scannerViewModel.bluetoothState.observe(this) {
+            switchContentsVisibility(
+                it, scannerViewModel.isGpsEnable(), scannerViewModel.getDeniedPermission())
+            switchScanner(
+                it, scannerViewModel.isGpsEnable(), scannerViewModel.getDeniedPermission())
+        }
+        scannerViewModel.gpsState.observe(this, {
+            switchContentsVisibility(
+                scannerViewModel.isBleEnable(), it, scannerViewModel.getDeniedPermission())
+            switchScanner(
+                scannerViewModel.isBleEnable(), it, scannerViewModel.getDeniedPermission())
+        })
+        scannerViewModel.deniedPermissionState.observe(this) {
+            switchContentsVisibility(
+                scannerViewModel.isBleEnable(), scannerViewModel.isGpsEnable(), it)
+            switchScanner(scannerViewModel.isBleEnable(), scannerViewModel.isGpsEnable(), it)
+        }
+        scannerViewModel.scannerLiveData.observe(this, {
+//            scannerViewModel.startScan()
+        })
     }
 
     private fun switchContentsVisibility(
