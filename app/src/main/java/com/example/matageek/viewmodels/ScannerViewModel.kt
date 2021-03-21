@@ -117,9 +117,6 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
     }
 
     companion object {
-        private const val PREFS_ID = "scanner_filter"
-        private const val PREFS_FILTER_UUID_REQUIRED = "filter_uuid"
-        private const val PREFS_FILTER_NEARBY_ONLY = "filter_nearby"
         private const val SCAN_PERIOD = 10000L
     }
 }
