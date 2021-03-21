@@ -3,8 +3,12 @@ package com.example.matageek
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.location.Location
 import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -92,6 +96,9 @@ class ScannerActivity : AppCompatActivity() {
                 permissionLauncher.launch(it.toTypedArray())
             }
         }
+        // register broadcast receiver
+        registerBleStateBroadcastReceiver()
+        registerGpsStateBroadcastReceiver()
     }
 
     override fun onResume() {
@@ -137,6 +144,36 @@ class ScannerActivity : AppCompatActivity() {
         bind.permissionDeniedLayout.root.visibility = View.GONE
     }
 
+    private fun registerGpsStateBroadcastReceiver() {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                scannerViewModel.updateGpsState()
+            }
+        }
+        registerReceiver(receiver, IntentFilter(LocationManager.MODE_CHANGED_ACTION))
+    }
+
+    private fun registerBleStateBroadcastReceiver() {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val state =
+                    intent?.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF)
+                val preState = intent?.getIntExtra(BluetoothAdapter.EXTRA_PREVIOUS_STATE,
+                    BluetoothAdapter.STATE_OFF)
+                when (state) {
+                    BluetoothAdapter.STATE_ON -> {
+                        scannerViewModel.enableBle()
+                    }
+                    BluetoothAdapter.STATE_TURNING_OFF, BluetoothAdapter.STATE_OFF -> {
+                        if (preState != BluetoothAdapter.STATE_OFF && preState != BluetoothAdapter.STATE_TURNING_OFF)
+                            scannerViewModel.disableBle()
+                    }
+                }
+            }
+        }
+        registerReceiver(receiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
+    }
+
     private fun registerLaunchSubActivity(
         resultOkCallback: () -> Unit,
         resultCanceledCallback: () -> Unit,
@@ -163,7 +200,9 @@ class ScannerActivity : AppCompatActivity() {
     private fun checkDeniedPermission(permissions: List<String>): List<String> {
         val deniedPermissions = mutableListOf<String>()
         permissions.forEach {
-            if (ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this,
+                    it) != PackageManager.PERMISSION_GRANTED
+            ) {
                 deniedPermissions.add(it)
             }
         }
