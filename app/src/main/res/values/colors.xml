@@ -7,7 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="text_error">#00BCD4</color>
+    <color name="text_permission_activate_error">#00BCD4</color>
     <color name="icon_background_color_initialized">#FFBF3A</color>
     <color name="icon_background_color_activated">#00BCD4</color>
     <color name="colorOnBackground">#D6D6D6</color>
@@ -16,4 +16,6 @@
     <color name="trap_fired">#F44336</color>
     <color name="trap_not_fired">#888888</color>
     <color name="device_name_edit">#00BCD4</color>
+    <color name="button_active">#00BCD4</color>
+    <color name="button_de_active">#888888</color>
 </resources>

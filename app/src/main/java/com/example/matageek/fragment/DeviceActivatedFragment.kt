@@ -7,14 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import com.example.matageek.R
 import com.example.matageek.databinding.FragmentDeviceActivatedBinding
 import com.example.matageek.dialog.DialogDeviceNameEdit
 import com.example.matageek.fruity.module.MatageekModule
 import com.example.matageek.viewmodels.DeviceActivatedViewModel
+import kotlinx.coroutines.*
 
 class DeviceActivatedFragment : Fragment() {
     private lateinit var _bind: FragmentDeviceActivatedBinding
@@ -25,7 +24,7 @@ class DeviceActivatedFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         _bind = FragmentDeviceActivatedBinding.inflate(inflater, container, false)
         deviceActivatedViewModel.deviceName.observe(viewLifecycleOwner, {
@@ -47,6 +46,9 @@ class DeviceActivatedFragment : Fragment() {
                 if (it == MatageekModule.MatageekMode.SETUP) "SETUP" else "DETECT"
             bind.modeChangeButton.text =
                 if (it == MatageekModule.MatageekMode.SETUP) "START DETECT" else "STOP DETECT"
+            bind.modeChangeButton.isClickable = true
+            bind.modeChangeButton.setTextColor(ContextCompat.getColor(requireContext(),
+                R.color.button_active))
         })
         // button handler
         bind.icActivatedDeviceNameEdit.setOnClickListener {
@@ -54,7 +56,12 @@ class DeviceActivatedFragment : Fragment() {
             deviceNameEdit.show(childFragmentManager, "test")
         }
         bind.modeChangeButton.setOnClickListener {
-            deviceActivatedViewModel.sendMatageekModeChangeMessage()
+            CoroutineScope(Job()).launch {
+                bind.modeChangeButton.isClickable = false
+                bind.modeChangeButton.setTextColor(ContextCompat.getColor(requireContext(),
+                    R.color.button_de_active))
+                deviceActivatedViewModel.sendMatageekModeChangeMessage()
+            }
         }
         listener?.onDeviceInfoUpdated()
 

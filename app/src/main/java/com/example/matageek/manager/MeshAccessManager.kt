@@ -33,10 +33,38 @@ class MeshAccessManager(context: Context) :
     private lateinit var meshAccessService: BluetoothGattService
     val handShakeState: MutableLiveData<HandShakeState> = MutableLiveData()
     private val modules: MutableList<Module> = mutableListOf()
+
+    // Node info
     val clusterSize: MutableLiveData<Short> = MutableLiveData()
     val batteryInfo: MutableLiveData<Byte> = MutableLiveData()
     val trapState: MutableLiveData<Boolean> = MutableLiveData()
     val modeState: MutableLiveData<MatageekModule.MatageekMode> = MutableLiveData()
+
+    // ble timeout handler map
+    val timeoutMap: MutableMap<Long, TimeOutCoroutineJobAndCounter<Boolean>> = mutableMapOf()
+
+    data class TimeOutCoroutineJobAndCounter<T>(
+        var counter: Short,
+        val successCallback: () -> Unit,
+    )
+
+    fun addTimeoutJob(
+        moduleId: Int,
+        actionType: Byte,
+        requestHandle: Byte,
+        counter: Short,
+        successCallback: () -> Unit,
+    ) {
+        timeoutMap[generateTimeoutKey(moduleId, actionType, requestHandle)] =
+            TimeOutCoroutineJobAndCounter(counter, successCallback)
+    }
+
+    fun generateTimeoutKey(moduleId: Int, actionType: Byte, requestHandle: Byte): Long {
+        val byteBuffer = ByteBuffer.allocate(Long.SIZE_BYTES).putInt(moduleId)
+            .put(actionType).put(requestHandle)
+        byteBuffer.clear()
+        return byteBuffer.long
+    }
 
     // TODO not secure
     private val defaultKeyInt = 0x22222222
@@ -134,6 +162,24 @@ class MeshAccessManager(context: Context) :
         val vendorModulePacket = ConnPacketVendorModule(packet)
         modules.find { it.vendorModuleId != 0 && vendorModulePacket.vendorModuleId == it.vendorModuleId }
             ?.actionResponseMessageReceivedHandler(packet)
+
+        val isVendorModuleId = PrimitiveTypes.isVendorModuleId(modulePacket.moduleId)
+        val wrapperModuleId = if (isVendorModuleId) vendorModulePacket.vendorModuleId else
+            ModuleIdWrapper(modulePacket.moduleId).wrappedModuleId
+        val actionType =
+            if (isVendorModuleId) vendorModulePacket.actionType else modulePacket.actionType
+        val requestHandle =
+            if (isVendorModuleId) vendorModulePacket.requestHandle else modulePacket.requestHandle
+        val timeoutKey = generateTimeoutKey(wrapperModuleId, actionType, requestHandle)
+        timeoutMap[timeoutKey]?.let {
+            --(it.counter)
+            Log.d("MATAG", "timeout counter: ${it.counter}")
+            if (it.counter == 0.toShort()) {
+                Log.d("MATAG", "timeout counter: job cancel")
+                it.successCallback()
+                timeoutMap.remove(timeoutKey)
+            }
+        }
     }
 
     override fun update(deviceInfo: DeviceInfo) {
@@ -160,8 +206,10 @@ class MeshAccessManager(context: Context) :
         // TODO not secure
         if (isEnrolled) {
             val key =
-                networkKeyPreference.getInt(context.getString(R.string.network_key), defaultKeyInt)
-            val byteBuffer = ByteBuffer.allocate(16).putInt(key).putInt(key).putInt(key).putInt(key)
+                networkKeyPreference.getInt(context.getString(R.string.network_key),
+                    defaultKeyInt)
+            val byteBuffer =
+                ByteBuffer.allocate(16).putInt(key).putInt(key).putInt(key).putInt(key)
             Log.d("MATAG", "startEncryptionHandshake: ${Data(byteBuffer.array())}")
             meshAccessDataCallback.networkKey = SecretKeySpec(byteBuffer.array(), "AES")
         }

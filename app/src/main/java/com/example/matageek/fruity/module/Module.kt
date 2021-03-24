@@ -64,12 +64,18 @@ abstract class Module(
 
     fun createTriggerActionMessagePacket(
         receiver: Short, actionType: Byte, additionalData: ByteArray? = null,
-        additionalDataSize: Int = 0,
+        additionalDataSize: Int = 0, requestHandle: Byte = 0,
     ): ByteArray {
-        return createSendModuleActionMessagePacket(MessageType.MODULE_TRIGGER_ACTION, receiver, 0,
-            actionType, additionalData, additionalDataSize, false)
+        return createSendModuleActionMessagePacket(MessageType.MODULE_TRIGGER_ACTION,
+            receiver, requestHandle, actionType, additionalData, additionalDataSize, false)
     }
 
     abstract fun actionResponseMessageReceivedHandler(packet: ByteArray)
+
+    companion object {
+        fun isVendorModuleId(moduleId: Int): Boolean {
+            return true
+        }
+    }
 
 }

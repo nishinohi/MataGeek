@@ -1,12 +1,60 @@
 package com.example.matageek.fruity.types
 
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+
 class PrimitiveTypes {
     companion object {
         const val NODE_ID_BROADCAST: Short = 0
         fun getVendorModuleId(vendorId: Short, subId: Byte): Int {
-            return (ModuleId.VENDOR_MODULE_ID_PREFIX.id.toUByte().toInt() or
-                    (subId.toUByte().toInt() shl 8) or (vendorId.toUShort().toInt() shl 16));
+            return ModuleIdWrapper(ModuleId.VENDOR_MODULE_ID_PREFIX.id, subId, vendorId)
+                .wrappedModuleId
         }
+
+        fun isVendorModuleId(moduleId: Byte): Boolean {
+            return moduleId == ModuleId.VENDOR_MODULE_ID_PREFIX.id
+        }
+    }
+}
+
+class ModuleIdWrapper {
+    val prefix: Byte
+    val subId: Byte
+    val vendorId: Short
+    val wrappedModuleId: Int
+
+    constructor(prefix: Byte, subId: Byte, vendorId: Short) {
+        this.prefix = prefix
+        this.subId = subId
+        this.vendorId = vendorId
+        val byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
+        byteBuffer.put(prefix).put(subId).putShort(vendorId).clear()
+        wrappedModuleId = byteBuffer.int
+    }
+
+    // Generate ModuleIdWrapper from Primary ModuleId
+    // moduleId is never VENDOR_MODULE_ID_PREFIX
+    constructor(moduleId: Byte) {
+        prefix = moduleId
+        subId = SUB_ID_FOR_PRIMARY_MODULE_ID
+        vendorId = VENDOR_ID_FOR_PRIMARY_MODULE_ID
+        val byteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
+        byteBuffer.put(prefix).put(subId).putShort(vendorId).clear()
+        wrappedModuleId = byteBuffer.int
+    }
+
+    constructor(wrappedModuleId: Int) {
+        this.wrappedModuleId = wrappedModuleId
+        val byteBuffer = ByteBuffer.allocate(4).putInt(wrappedModuleId)
+        byteBuffer.clear()
+        vendorId = byteBuffer.short
+        subId = byteBuffer.get()
+        prefix = byteBuffer.get()
+    }
+
+    companion object {
+        const val SUB_ID_FOR_PRIMARY_MODULE_ID: Byte = 0xFF.toByte()
+        const val VENDOR_ID_FOR_PRIMARY_MODULE_ID: Short = 0xFFFF.toShort()
     }
 }
 

@@ -16,6 +16,10 @@ class MatageekModule : Module("matageek", PrimitiveTypes.getVendorModuleId(
                 notifyObserver(DeviceInfo(null, null, trapStateMessage.trapState,
                     null, MatageekMode.getMode(trapStateMessage.mode)))
             }
+            MatageekModuleActionResponseMessages.MODE_CHANGE_RESPONSE.type -> {
+                val responseCode = MatageekModuleResponse(packet.copyOfRange(
+                    ConnPacketVendorModule.SIZEOF_PACKET, packet.size))
+            }
         }
     }
 
@@ -65,8 +69,35 @@ class MatageekModule : Module("matageek", PrimitiveTypes.getVendorModuleId(
             val byteBuffer = getByteBufferAllocate(SIZEOF_PACKET)
             byteBuffer.put(matageekMode.mode)
             byteBuffer.putShort(clusterSize)
-            return  byteBuffer.array()
+            return byteBuffer.array()
         }
+    }
+
+    class MatageekModuleResponse : ConnectionMessageTypes {
+        val responseCode: MatageekResponseCode
+
+        constructor(packet: ByteArray) {
+            val byteBuffer = getByteBufferAllocate(SIZEOF_PACKET)
+            responseCode = getResponseCode(byteBuffer.get())
+        }
+
+        override fun createBytePacket(): ByteArray {
+            TODO("Not yet implemented")
+        }
+
+        companion object {
+            fun getResponseCode(code: Byte): MatageekResponseCode {
+                return MatageekResponseCode.values().find { it.code == code }
+                    ?: MatageekResponseCode.FAILED
+            }
+
+            const val SIZEOF_PACKET = 1
+        }
+    }
+
+    enum class MatageekResponseCode(val code: Byte) {
+        OK(0),
+        FAILED(1),
     }
 
     enum class MatageekModuleTriggerActionMessages(
@@ -80,6 +111,9 @@ class MatageekModule : Module("matageek", PrimitiveTypes.getVendorModuleId(
 
     enum class MatageekModuleActionResponseMessages(val type: Byte) {
         STATE_RESPONSE(0),
+        TRAP_FIRE_RESPONSE(1),
+        MODE_CHANGE_RESPONSE(2),
+        BATTERY_DEAD_RESPONSE(3),
     }
 
     enum class MatageekMode(val mode: Byte) {

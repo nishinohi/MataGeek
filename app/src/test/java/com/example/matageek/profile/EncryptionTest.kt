@@ -2,6 +2,7 @@ package com.example.matageek.profile
 
 import com.example.matageek.profile.callback.MeshAccessDataCallback
 import junit.framework.TestCase
+import no.nordicsemi.android.ble.callback.SuccessCallback
 import no.nordicsemi.android.ble.data.Data
 import org.hamcrest.CoreMatchers.`is`
 import org.junit.Assert.assertThat
@@ -153,7 +154,7 @@ class EncryptionTest : TestCase() {
                     data: ByteArray,
                     encryptionNonce: Array<Int>?,
                     encryptionKey: SecretKey?,
-                    enqueue: Boolean,
+                    callback: SuccessCallback?,
                 ) {
                     TODO("Not yet implemented")
                 }
@@ -192,7 +193,7 @@ class EncryptionTest : TestCase() {
                     data: ByteArray,
                     encryptionNonce: Array<Int>?,
                     encryptionKey: SecretKey?,
-                    enqueue: Boolean,
+                    callback: SuccessCallback?,
                 ) {
                     TODO("Not yet implemented")
                 }

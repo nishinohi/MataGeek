@@ -1,6 +1,15 @@
 package com.example.matageek.viewmodels
 
 import android.app.Application
+import androidx.lifecycle.viewModelScope
+import com.example.matageek.fruity.module.EnrollmentModule
+import com.example.matageek.fruity.types.ModuleId
+import com.example.matageek.fruity.types.ModuleIdWrapper
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import kotlin.coroutines.resume
 
 class DeviceNonActivatedViewModel(application: Application) :
     AbstractDeviceConfigViewModel(application) {
@@ -8,8 +17,37 @@ class DeviceNonActivatedViewModel(application: Application) :
     val clusterSize = meshAccessManager.clusterSize
     val battery = meshAccessManager.batteryInfo
 
-    fun sendEnrollmentBroadcastAppStart() {
-        meshAccessManager.sendEnrollmentBroadcastAppStart()
+    // TODO When enroll process success, device will reset so not all response can receive
+    // so timeout map counter have to be 0
+    private suspend fun sendEnrollmentBroadcastAppStartAsync(): Boolean {
+        return suspendCancellableCoroutine {
+            meshAccessManager.sendEnrollmentBroadcastAppStart()
+            meshAccessManager.addTimeoutJob(
+                ModuleIdWrapper(ModuleId.ENROLLMENT_MODULE.id).wrappedModuleId,
+                EnrollmentModule.EnrollmentModuleActionResponseMessages.ENROLLMENT_RESPONSE.type,
+                0, clusterSize.value!!) {
+                it.resume(true)
+            }
+        }
+    }
+
+    suspend fun sendEnrollmentBroadcastAppStart(
+        successCallback: (() -> Unit)? = null,
+        failCallback: (() -> Unit)? = null,
+        timeMills: Long = 5000,
+    ) {
+        val result = withContext(viewModelScope.coroutineContext) {
+            withTimeout(timeMills) {
+                try {
+                    sendEnrollmentBroadcastAppStartAsync()
+                } catch (e: TimeoutCancellationException) {
+                    failCallback?.let { it() }
+                    false
+                }
+            }
+        }
+        if (result) successCallback?.let { it() }
+        else failCallback?.let { it() }
     }
 
 }

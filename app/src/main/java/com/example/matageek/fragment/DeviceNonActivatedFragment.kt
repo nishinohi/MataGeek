@@ -7,10 +7,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import com.example.matageek.R
 import com.example.matageek.databinding.FragmentDeviceNonActivatedBinding
-import com.example.matageek.viewmodels.DeviceActivatedViewModel
 import com.example.matageek.viewmodels.DeviceNonActivatedViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class DeviceNonActivatedFragment : Fragment() {
     private lateinit var _bind: FragmentDeviceNonActivatedBinding
@@ -35,7 +36,9 @@ class DeviceNonActivatedFragment : Fragment() {
         })
         // button handler
         bind.activateButton.setOnClickListener {
-            deviceNonActivatedViewModel.sendEnrollmentBroadcastAppStart()
+            CoroutineScope(Job()).launch {
+                deviceNonActivatedViewModel.sendEnrollmentBroadcastAppStart()
+            }
         }
 
         listener?.onDeviceInfoUpdated()
