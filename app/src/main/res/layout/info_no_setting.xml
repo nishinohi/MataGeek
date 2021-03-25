@@ -12,15 +12,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_baseline_bluetooth_disabled" />
+        app:srcCompat="@drawable/ic_baseline_bluetooth_disabled"
+        app:tint="@color/permission_setting_de_active" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/bluetooth_disable_title"
+        style="@style/permission_setting_invalid"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="@string/bluetooth_disabled"
-        android:textColor="@color/text_permission_activate_error"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ic_bluetooth_disable" />
@@ -39,6 +40,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/action_enable_bluetooth"
+        style="@style/activate_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -52,7 +54,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:constraint_referenced_ids="bluetooth_permission_explain,action_enable_bluetooth,ic_bluetooth_disable,bluetooth_disable_title"
-        tools:visibility="gone" />
+        tools:visibility="visible" />
 
     <ImageView
         android:id="@+id/ic_gps_disable"
@@ -61,15 +63,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_baseline_location_off" />
+        app:srcCompat="@drawable/ic_baseline_location_off"
+        app:tint="@color/permission_setting_de_active" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/gps_disable_title"
+        style="@style/permission_setting_invalid"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="@string/gps_disabled"
-        android:textColor="@color/text_permission_activate_error"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ic_gps_disable" />
@@ -88,6 +91,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/action_enable_gps"
+        style="@style/activate_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -101,6 +105,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:constraint_referenced_ids="action_enable_gps,ic_gps_disable,gps_permission_explain,gps_disable_title"
-        tools:visibility="visible" />
+        tools:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

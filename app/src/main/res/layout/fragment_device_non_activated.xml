@@ -7,31 +7,30 @@
 
     <TextView
         android:id="@+id/mesh_info"
+        style="@style/device_config_info_section"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:text="@string/mesh_info"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        android:textColor="@color/section_color"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/activated_cluster_size_title"
+        style="@style/device_config_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="@string/cluster_size"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintStart_toStartOf="@+id/mesh_info"
         app:layout_constraintTop_toBottomOf="@+id/mesh_info" />
 
     <TextView
         android:id="@+id/activated_cluster_size"
+        style="@style/device_config_param_large"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="84dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/activated_cluster_size_title"
         tools:text="0" />
@@ -39,7 +38,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/activate_button"
-        style="?attr/materialButtonOutlinedStyle"
+        style="@style/activate_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -47,7 +46,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/activated_cluster_size_title"/>
+        app:layout_constraintTop_toBottomOf="@+id/activated_cluster_size_title" />
+
     <View
         android:id="@+id/mesh_device_info_divider"
         android:layout_width="380dp"
@@ -60,32 +60,31 @@
 
     <TextView
         android:id="@+id/activated_device_info"
+        style="@style/device_config_info_section"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="@string/device_info"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        android:textColor="@color/section_color"
         app:layout_constraintStart_toStartOf="@+id/activated_cluster_size_title"
         app:layout_constraintTop_toBottomOf="@+id/mesh_device_info_divider" />
 
     <TextView
         android:id="@+id/activated_device_name_title"
+        style="@style/device_config_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="@string/device_name"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintStart_toStartOf="@+id/activated_device_info"
         app:layout_constraintTop_toBottomOf="@+id/activated_device_info" />
 
     <TextView
         android:id="@+id/activated_device_name"
+        style="@style/device_config_param_small"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginTop="8dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
         app:layout_constraintStart_toStartOf="@+id/activated_device_name_title"
         app:layout_constraintTop_toBottomOf="@+id/activated_device_name_title"
         tools:text="unknown" />
@@ -102,21 +101,21 @@
 
     <TextView
         android:id="@+id/activated_battery_title"
+        style="@style/device_config_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/battery"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintStart_toStartOf="@+id/activated_device_info"
         app:layout_constraintTop_toBottomOf="@+id/activated_device_name" />
 
     <TextView
         android:id="@+id/activated_battery"
+        style="@style/device_config_param_small"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginTop="8dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
         app:layout_constraintStart_toStartOf="@+id/activated_battery_title"
         app:layout_constraintTop_toBottomOf="@+id/activated_battery_title"
         tools:text="0%" />
@@ -128,7 +127,8 @@
         android:layout_marginEnd="72dp"
         android:src="@drawable/ic_baseline_battery"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/activated_battery_title" />
+        app:layout_constraintTop_toTopOf="@+id/activated_battery_title"
+        app:tint="@color/battery" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

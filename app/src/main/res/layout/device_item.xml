@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/device_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -21,6 +22,7 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/discovered_device_name"
+        style="@style/device_list_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/scanner_horizontal_margin"
@@ -28,20 +30,16 @@
         android:layout_toEndOf="@id/device_icon"
         android:ellipsize="end"
         android:maxLines="1"
-        android:text="MataGeek Device"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
-        android:textSize="18sp" />
+        tools:text="MataGeek Device" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/device_address"
+        style="@style/device_list_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/discovered_device_name"
         android:layout_toEndOf="@id/device_icon"
-        android:text="AA:BB:CC:DD:EE:FF"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-        android:textColor="?android:textColorSecondary"
-        android:textSize="12sp" />
+        tools:text="AA:BB:CC:DD:EE:FF" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/rssi"

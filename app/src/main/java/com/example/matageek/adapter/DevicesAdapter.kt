@@ -30,7 +30,7 @@ class DevicesAdapter(private val onItemClick: (DiscoveredDevice) -> Unit) :
         (holder.binding.deviceIcon.background as GradientDrawable).setColor(ContextCompat.getColor(
             holder.itemView.context,
             if (discoveredDevice.enrolled) R.color.icon_background_color_activated else
-                R.color.icon_background_color_initialized)
+                R.color.icon_background_color_non_activated)
         )
         val rssiPercent = (100.0f * (127.0f + discoveredDevice.rssi) / (127.0f + 20.0f)).toInt()
         holder.binding.rssi.setImageLevel(rssiPercent)
