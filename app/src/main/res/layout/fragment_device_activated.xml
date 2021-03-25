@@ -177,10 +177,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="72dp"
-        android:src="@drawable/ic_baseline_battery"
+        android:src="@drawable/ic_battery_level"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/activated_battery_title"
-        app:tint="@color/battery" />
+        app:tint="@color/battery"
+        tools:src="@drawable/ic_battery_70" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

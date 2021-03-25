@@ -32,6 +32,7 @@ class DeviceActivatedFragment : Fragment() {
         })
         deviceActivatedViewModel.battery.observe(viewLifecycleOwner, {
             bind.activatedBattery.text = "$it%"
+            bind.icActivatedBattery.setImageLevel(0)
         })
         deviceActivatedViewModel.clusterSize.observe(viewLifecycleOwner, {
             bind.activatedClusterSize.text = it.toString()
