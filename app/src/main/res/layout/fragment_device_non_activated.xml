@@ -35,7 +35,6 @@
         app:layout_constraintTop_toTopOf="@+id/activated_cluster_size_title"
         tools:text="0" />
 
-
     <com.google.android.material.button.MaterialButton
         android:id="@+id/activate_button"
         style="@style/activate_button"
@@ -44,7 +43,6 @@
         android:layout_marginTop="8dp"
         android:text="@string/node_activate_button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/activated_cluster_size_title" />
 
@@ -91,13 +89,13 @@
 
     <ImageView
         android:id="@+id/ic_activated_device_name_edit"
+        style="@style/device_name_edit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="72dp"
         android:src="@drawable/ic_text_edit"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/activated_device_name_title"
-        app:tint="@color/device_name_edit" />
+        app:layout_constraintTop_toTopOf="@+id/activated_device_name_title" />
 
     <TextView
         android:id="@+id/activated_battery_title"

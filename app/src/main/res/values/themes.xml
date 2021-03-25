@@ -2,5 +2,6 @@
     <!-- Base application theme. -->
     <style name="Theme.MataGeek" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryDark">@color/white</item>
     </style>
 </resources>

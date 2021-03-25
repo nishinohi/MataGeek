@@ -47,8 +47,6 @@ class DeviceActivatedFragment : Fragment() {
             bind.modeChangeButton.text =
                 if (it == MatageekModule.MatageekMode.SETUP) "START DETECT" else "STOP DETECT"
             bind.modeChangeButton.isClickable = true
-            bind.modeChangeButton.setTextColor(ContextCompat.getColor(requireContext(),
-                R.color.button_active))
         })
         // button handler
         bind.icActivatedDeviceNameEdit.setOnClickListener {
@@ -56,10 +54,8 @@ class DeviceActivatedFragment : Fragment() {
             deviceNameEdit.show(childFragmentManager, "test")
         }
         bind.modeChangeButton.setOnClickListener {
+            bind.modeChangeButton.isClickable = false
             CoroutineScope(Job()).launch {
-                bind.modeChangeButton.isClickable = false
-                bind.modeChangeButton.setTextColor(ContextCompat.getColor(requireContext(),
-                    R.color.button_de_active))
                 deviceActivatedViewModel.sendMatageekModeChangeMessage()
             }
         }

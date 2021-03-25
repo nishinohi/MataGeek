@@ -15,9 +15,12 @@
     <color name="trap_fired">#F44336</color>
     <color name="trap_not_fired">#B8B8B8</color>
     <color name="device_name_edit">#00BCD4</color>
+    <color name="night_device_name_edit">#5598A1</color>
     <color name="button_active">#00BCD4</color>
     <color name="button_de_active">#B8B8B8</color>
     <color name="text_permission_setting_de_activate">#00BCD4</color>
     <color name="permission_setting_de_active">#B8B8B8</color>
     <color name="battery">#B8B8B8</color>
+    <color name="night_button_text">#CCCCCC</color>
+    <color name="night_button_tint">#5598A1</color>
 </resources>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <style name="matageek_app_bar_title" parent="Widget.MaterialComponents.AppBarLayout.Primary">
         <item name="android:textSize">20sp</item>
     </style>
@@ -15,8 +14,9 @@
         <item name="android:textColor">@color/text_permission_setting_de_activate</item>
     </style>
 
-    <style name="activate_button" parent="Widget.AppCompat.Button">
-        <item name="android:textColor">@color/button_active</item>
+    <style name="activate_button" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/button_active</item>
+        <item name="android:textColor">@color/white</item>
     </style>
 
     <style name="connection_state" parent="TextAppearance.MaterialComponents.Body1" />
@@ -28,4 +28,8 @@
     <style name="device_config_title" parent="TextAppearance.AppCompat.Medium"/>
     <style name="device_config_param_large" parent="TextAppearance.AppCompat.Medium"/>
     <style name="device_config_param_small" parent="TextAppearance.AppCompat.Caption"/>
+
+    <style name="device_name_edit">
+        <item name="tint">@color/device_name_edit</item>
+    </style>
 </resources>

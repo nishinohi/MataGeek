@@ -1,10 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Theme.MataGeek" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
-<!--        <item name="colorPrimaryVariant">@color/purple_700</item>-->
-        <!-- Secondary brand color. -->
-        <!-- Status bar color. -->
-        <!-- Customize your theme here. -->
     </style>
 </resources>
