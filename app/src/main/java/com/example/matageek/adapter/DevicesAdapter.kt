@@ -32,7 +32,9 @@ class DevicesAdapter(private val onItemClick: (DiscoveredDevice) -> Unit) :
             if (discoveredDevice.enrolled) R.color.icon_background_color_activated else
                 R.color.icon_background_color_initialized)
         )
-        // TODO RSSI
+        val rssiPercent = (100.0f * (127.0f + discoveredDevice.rssi) / (127.0f + 20.0f)).toInt()
+        holder.binding.rssi.setImageLevel(rssiPercent)
+
     }
 
     object DiscoveredDeviceDiffCallback : DiffUtil.ItemCallback<DiscoveredDevice>() {

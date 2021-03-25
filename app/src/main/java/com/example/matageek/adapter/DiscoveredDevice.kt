@@ -11,7 +11,7 @@ class DiscoveredDevice(var lastScanResult: ScanResult) : Parcelable {
     val device: BluetoothDevice get() = lastScanResult.device
     val name get() = lastScanResult.scanRecord?.deviceName ?: ""
     var enrolled: Boolean = false
-    private val rssi get() = lastScanResult.rssi
+    val rssi get() = lastScanResult.rssi
     var previousRssi = 0
     var highestRssi = -128
 
