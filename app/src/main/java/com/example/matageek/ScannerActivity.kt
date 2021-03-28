@@ -3,17 +3,12 @@ package com.example.matageek
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.content.pm.PackageManager
-import android.location.Location
 import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,15 +25,19 @@ class ScannerActivity : AppCompatActivity() {
     private val requestPermissions: List<String> =
         arrayListOf(Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN)
+    private lateinit var deviceNamePreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _bind = ActivityScannerBinding.inflate(layoutInflater)
         setContentView(bind.root)
+        // get preference
+        deviceNamePreferences = getSharedPreferences(getString(R.string.preference_device_name_key),
+            Context.MODE_PRIVATE)
         // set recycle view adapter and recycle list observer
         setRecycleViewAdapter()
         // set live data observer
-        setLivedataObserver()
+        setLiveDataObserver()
         // permission check
         scannerViewModel.updateDeniedPermission(checkDeniedPermission(requestPermissions))
         // set button handler
@@ -90,12 +89,17 @@ class ScannerActivity : AppCompatActivity() {
         bind.scannedDeviceList.adapter = adapter
         scannerViewModel.devicesLiveData.observe(this) {
             it?.let {
+                for (discoveredDevice in it) {
+                    if (discoveredDevice.name.isNotEmpty()) continue
+                    deviceNamePreferences.getString(discoveredDevice.device.address, "Unknown")
+                        ?.let { deviceName -> discoveredDevice.name = deviceName }
+                }
                 adapter.submitList(it)
             }
         }
     }
 
-    private fun setLivedataObserver() {
+    private fun setLiveDataObserver() {
         // set live data observer
         scannerViewModel.bluetoothState.observe(this) {
             switchContentsVisibility(

@@ -9,7 +9,7 @@ import com.example.matageek.fruity.types.*
 
 class DiscoveredDevice(var lastScanResult: ScanResult) : Parcelable {
     val device: BluetoothDevice get() = lastScanResult.device
-    val name get() = lastScanResult.scanRecord?.deviceName ?: ""
+    var name = lastScanResult.scanRecord?.deviceName ?: ""
     var enrolled: Boolean = false
     val rssi get() = lastScanResult.rssi
     var previousRssi = 0
