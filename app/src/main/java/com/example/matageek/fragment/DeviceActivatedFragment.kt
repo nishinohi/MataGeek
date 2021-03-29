@@ -51,8 +51,7 @@ class DeviceActivatedFragment : Fragment() {
         })
         // button handler
         bind.icActivatedDeviceNameEdit.setOnClickListener {
-            val deviceNameEdit = DialogDeviceNameEdit()
-            deviceNameEdit.show(childFragmentManager, "test")
+            DialogDeviceNameEdit().show(childFragmentManager, "test")
         }
         bind.modeChangeButton.setOnClickListener {
             bind.modeChangeButton.isClickable = false

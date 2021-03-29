@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import com.example.matageek.databinding.FragmentDeviceNonActivatedBinding
+import com.example.matageek.dialog.DialogDeviceNameEdit
 import com.example.matageek.viewmodels.DeviceNonActivatedViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -39,6 +40,9 @@ class DeviceNonActivatedFragment : Fragment() {
             CoroutineScope(Job()).launch {
                 deviceNonActivatedViewModel.sendEnrollmentBroadcastAppStart()
             }
+        }
+        bind.icActivatedDeviceNameEdit.setOnClickListener {
+            DialogDeviceNameEdit().show(childFragmentManager, "test")
         }
 
         listener?.onDeviceInfoUpdated()
