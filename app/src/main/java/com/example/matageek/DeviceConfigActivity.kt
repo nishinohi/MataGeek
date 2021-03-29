@@ -137,7 +137,7 @@ class DeviceConfigActivity : AppCompatActivity(),
     }
 
     override fun onDeviceInfoUpdated() {
-        deviceNamePreferences.getString(discoveredDevice.device.address, "unknown")?.let {
+        deviceNamePreferences.getString(discoveredDevice.device.address, "Unknown Device")?.let {
             currentViewModel.update(DeviceInfo(null, null, null, it))
         }
     }
