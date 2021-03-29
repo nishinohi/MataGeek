@@ -47,7 +47,9 @@ class DevicesAdapter(private val onItemClick: (DiscoveredDevice) -> Unit) :
         override fun areContentsTheSame(
             oldItem: DiscoveredDevice, newItem: DiscoveredDevice,
         ): Boolean {
-            return !oldItem.hasRssiLevelChanged() && oldItem.enrolled == newItem.enrolled
+            return !oldItem.hasRssiLevelChanged() &&
+                    oldItem.enrolled == newItem.enrolled &&
+                    newItem.name == oldItem.name
         }
 
     }

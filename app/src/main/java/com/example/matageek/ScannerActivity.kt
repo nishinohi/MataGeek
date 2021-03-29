@@ -51,6 +51,7 @@ class ScannerActivity : AppCompatActivity() {
         super.onResume()
         scannerViewModel.updateGpsState()
         scannerViewModel.updateBleState()
+        scannerViewModel.refresh()
     }
 
     private fun setButtonHandler() {

@@ -33,6 +33,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
 
     fun refresh() {
         scannerLiveData.refresh()
+        devicesLiveData.applyFilter()
     }
 
     fun startScan() {
