@@ -109,8 +109,7 @@ class DeviceConfigActivity : AppCompatActivity(),
                         startActivity(this)
                     }
                 }
-                Log.d("MATAG",
-                    "onCreate: DISCONNECTING reason ${(connectionState as ConnectionState.Disconnected).reason}")
+                Log.d("MATAG", "onCreate: DISCONNECTING reason ${connectionState.reason}")
             }
         }
     }

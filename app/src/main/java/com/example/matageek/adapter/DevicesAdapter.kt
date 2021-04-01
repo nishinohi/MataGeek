@@ -51,7 +51,6 @@ class DevicesAdapter(private val onItemClick: (DiscoveredDevice) -> Unit) :
                     oldItem.enrolled == newItem.enrolled &&
                     newItem.name == oldItem.name
         }
-
     }
 
     class DeviceViewHolder(itemView: View, val onItemClick: (DiscoveredDevice) -> Unit) :
@@ -67,8 +66,6 @@ class DevicesAdapter(private val onItemClick: (DiscoveredDevice) -> Unit) :
                 }
             }
         }
-
     }
-
 
 }
