@@ -24,6 +24,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light" />
+
+            <ProgressBar
+                android:id="@+id/message_progress"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:visibility="invisible"
+                tools:visibility="visible"/>
+
         </com.google.android.material.appbar.AppBarLayout>
 
         <TextView

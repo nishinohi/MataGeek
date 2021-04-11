@@ -16,6 +16,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
     val connectionState: LiveData<ConnectionState> = meshAccessManager.state
     val handShakeState = meshAccessManager.handShakeState
     val deviceName: MutableLiveData<String> = MutableLiveData()
+    val progressState: MutableLiveData<Boolean> = MutableLiveData()
 
     private lateinit var discoveredDevice: DiscoveredDevice
 
@@ -40,6 +41,14 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
     // TODO implement failed
     fun disconnect() {
         meshAccessManager.disconnect().enqueue()
+    }
+
+    fun inProgress() {
+        progressState.postValue(true)
+    }
+
+    fun endProgress() {
+        progressState.postValue(false)
     }
 
     companion object {

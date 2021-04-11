@@ -2,6 +2,7 @@ package com.example.matageek.fragment
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -47,7 +48,6 @@ class DeviceActivatedFragment : Fragment() {
                 if (it == MatageekModule.MatageekMode.SETUP) "SETUP" else "DETECT"
             bind.modeChangeButton.text =
                 if (it == MatageekModule.MatageekMode.SETUP) "START DETECT" else "STOP DETECT"
-            bind.modeChangeButton.isClickable = true
         })
         // button handler
         bind.icActivatedDeviceNameEdit.setOnClickListener {
@@ -56,7 +56,13 @@ class DeviceActivatedFragment : Fragment() {
         bind.modeChangeButton.setOnClickListener {
             bind.modeChangeButton.isClickable = false
             CoroutineScope(Job()).launch {
-                deviceActivatedViewModel.sendMatageekModeChangeMessage()
+                deviceActivatedViewModel.inProgress()
+                try {
+                    deviceActivatedViewModel.sendMatageekModeChangeMessage()
+                } finally {
+                    deviceActivatedViewModel.endProgress()
+                    bind.modeChangeButton.isClickable = true
+                }
             }
         }
         listener?.onDeviceInfoUpdated()

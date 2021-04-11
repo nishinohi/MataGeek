@@ -62,6 +62,9 @@ class DeviceConfigActivity : AppCompatActivity(),
         currentViewModel.handShakeState.observe(this, {
             onHandShakeUpdated(it)
         })
+        currentViewModel.progressState.observe(this, {
+            bind.messageProgress.visibility = if (it) View.VISIBLE else View.INVISIBLE
+        })
     }
 
     private fun isActivated(): Boolean {

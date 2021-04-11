@@ -37,8 +37,15 @@ class DeviceNonActivatedFragment : Fragment() {
         })
         // button handler
         bind.activateButton.setOnClickListener {
+            bind.activateButton.isClickable = false
             CoroutineScope(Job()).launch {
-                deviceNonActivatedViewModel.sendEnrollmentBroadcastAppStart()
+                deviceNonActivatedViewModel.inProgress()
+                try {
+                    deviceNonActivatedViewModel.sendEnrollmentBroadcastAppStart()
+                } finally {
+                    deviceNonActivatedViewModel.endProgress()
+                    bind.activateButton.isClickable = true
+                }
             }
         }
         bind.icActivatedDeviceNameEdit.setOnClickListener {
