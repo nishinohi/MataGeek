@@ -16,7 +16,6 @@ import com.example.matageek.fruity.types.*
 import com.example.matageek.profile.callback.MeshAccessDataCallback
 import com.example.matageek.profile.callback.EncryptionState
 import com.example.matageek.profile.FruityDataEncryptAndSplit
-import com.example.matageek.viewmodels.AbstractDeviceConfigViewModel
 import no.nordicsemi.android.ble.callback.SuccessCallback
 import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.livedata.ObservableBleManager
@@ -27,19 +26,13 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import kotlin.Exception
 
-class MeshAccessManager(context: Context) :
-    ObservableBleManager(context), MeshAccessObserver {
+class MeshAccessManager(context: Context, deviceInfoObserver: DeviceInfoObserver) :
+    ObservableBleManager(context) {
 
     /** MeshAccessService Characteristics */
     private lateinit var meshAccessService: BluetoothGattService
     val handShakeState: MutableLiveData<HandShakeState> = MutableLiveData()
     private val modules: MutableList<Module> = mutableListOf()
-
-    // Node info
-    val clusterSize: MutableLiveData<Short> = MutableLiveData()
-    val batteryInfo: MutableLiveData<Byte> = MutableLiveData()
-    val trapState: MutableLiveData<Boolean> = MutableLiveData()
-    val modeState: MutableLiveData<MatageekModule.MatageekMode> = MutableLiveData()
 
     // ble timeout handler map
     val timeoutMap: MutableMap<Long, TimeOutCoroutineJobAndCounter<Boolean>> = mutableMapOf()
@@ -47,7 +40,7 @@ class MeshAccessManager(context: Context) :
     data class TimeOutCoroutineJobAndCounter<T>(
         var counter: Short,
         val successCallback: () -> Unit,
-        val customCallBack: ((packet: ByteArray) -> Unit)?
+        val customCallBack: ((packet: ByteArray) -> Unit)?,
     )
 
     fun addTimeoutJob(
@@ -56,7 +49,7 @@ class MeshAccessManager(context: Context) :
         requestHandle: Byte,
         counter: Short,
         successCallback: () -> Unit,
-        customCallBack: ((packet: ByteArray) -> Unit)? = null
+        customCallBack: ((packet: ByteArray) -> Unit)? = null,
     ) {
         timeoutMap[generateTimeoutKey(moduleId, actionType, requestHandle)] =
             TimeOutCoroutineJobAndCounter(counter, successCallback, customCallBack)
@@ -81,7 +74,7 @@ class MeshAccessManager(context: Context) :
         modules.add(StatusReporterModule())
         modules.add(EnrollmentModule())
         modules.add(MatageekModule())
-        modules.forEach { it.addObserver(this) }
+        modules.forEach { it.addObserver(deviceInfoObserver) }
     }
 
     override fun getGattCallback(): BleManagerGattCallback {
@@ -147,9 +140,11 @@ class MeshAccessManager(context: Context) :
                         moduleMessageReceivedHandler(packet)
                     }
                     MessageType.CLUSTER_INFO_UPDATE -> {
-                        val clusterInfoUpdate =
-                            ConnPacketClusterInfoUpdate(packet)
-                        update(DeviceInfo(null, clusterInfoUpdate.clusterSizeChange, null))
+                        val clusterInfoUpdate = ConnPacketClusterInfoUpdate(packet)
+                        // It can use any module to update device info
+                        modules[0].notifyObserver(DeviceInfo(null,
+                            clusterInfoUpdate.clusterSizeChange,
+                            null))
                     }
                     else -> {
                         Log.d("MATAG", "onDataReceived: Unknown Message $messageType")
@@ -177,7 +172,7 @@ class MeshAccessManager(context: Context) :
         timeoutMap[timeoutKey]?.let {
             --(it.counter)
             Log.d("MATAG", "timeout counter: ${it.counter}")
-            it.customCallBack?.let { customCallback -> customCallback(packet)}
+            it.customCallBack?.let { customCallback -> customCallback(packet) }
             if (it.counter == 0.toShort()) {
                 Log.d("MATAG", "timeout counter: job cancel")
                 it.successCallback()
@@ -188,13 +183,6 @@ class MeshAccessManager(context: Context) :
 
     fun getPartnerId(): Short {
         return meshAccessDataCallback.partnerId
-    }
-
-    override fun update(deviceInfo: DeviceInfo) {
-        deviceInfo.clusterSize?.let { this.clusterSize.postValue(it) }
-        deviceInfo.batteryInfo?.let { this.batteryInfo.postValue(it) }
-        deviceInfo.trapState?.let { this.trapState.postValue(it) }
-        deviceInfo.matageekMode?.let { this.modeState.postValue(it) }
     }
 
     private fun <T : Module> findModuleById(moduleId: Int): T {

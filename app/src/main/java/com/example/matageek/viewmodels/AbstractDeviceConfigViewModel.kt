@@ -6,18 +6,25 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.matageek.adapter.DiscoveredDevice
+import com.example.matageek.fruity.module.MatageekModule
 import com.example.matageek.manager.DeviceInfo
+import com.example.matageek.manager.DeviceInfoObserver
 import com.example.matageek.manager.MeshAccessManager
 import no.nordicsemi.android.ble.livedata.state.ConnectionState
 
 abstract class AbstractDeviceConfigViewModel(application: Application) :
-    AndroidViewModel(application) {
-    protected val meshAccessManager: MeshAccessManager = MeshAccessManager(application)
+    AndroidViewModel(application), DeviceInfoObserver {
+    protected val meshAccessManager: MeshAccessManager = MeshAccessManager(application, this)
     val currentNodeId: MutableLiveData<Short> = MutableLiveData()
     val connectionState: LiveData<ConnectionState> = meshAccessManager.state
     val handShakeState = meshAccessManager.handShakeState
     val deviceName: MutableLiveData<String> = MutableLiveData()
     val progressState: MutableLiveData<Boolean> = MutableLiveData()
+
+    val clusterSize: MutableLiveData<Short> = MutableLiveData()
+    val batteryInfo: MutableLiveData<Byte> = MutableLiveData()
+    val trapState: MutableLiveData<Boolean> = MutableLiveData()
+    val modeState: MutableLiveData<MatageekModule.MatageekMode> = MutableLiveData()
 
     private lateinit var discoveredDevice: DiscoveredDevice
 
@@ -56,19 +63,20 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
         const val EXTRA_DEVICE: String = "com.matageek.EXTRA_DEVICE"
     }
 
-    fun update(deviceInfo: DeviceInfo) {
-        deviceInfo.clusterSize?.let { meshAccessManager.clusterSize.postValue(it) }
-        deviceInfo.batteryInfo?.let { meshAccessManager.batteryInfo.postValue(it) }
-        deviceInfo.trapState?.let { meshAccessManager.trapState.postValue(it) }
+    override fun updateDeviceInfo(deviceInfo: DeviceInfo) {
+        deviceInfo.nodeId?.let { currentNodeId.postValue(it) }
+        deviceInfo.clusterSize?.let { clusterSize.postValue(it) }
+        deviceInfo.batteryInfo?.let { batteryInfo.postValue(it) }
+        deviceInfo.trapState?.let { trapState.postValue(it) }
+        deviceInfo.matageekMode?.let { modeState.postValue(it) }
         deviceInfo.deviceName?.let { deviceName.postValue(it) }
-        deviceInfo.matageekMode?.let { meshAccessManager.modeState.postValue(it) }
     }
 
     /**
      * If you specify no nodeIds, update by partnerId
      */
-    fun updateCurrentNodeId(nodeId: Short?) {
-        currentNodeId.postValue(nodeId ?: meshAccessManager.getPartnerId())
+    fun updateCurrentNodeIdByPartnerId() {
+        currentNodeId.postValue(meshAccessManager.getPartnerId())
     }
 
 }

@@ -15,16 +15,12 @@ import kotlin.coroutines.resume
 class DeviceActivatedViewModel(application: Application) :
     AbstractDeviceConfigViewModel(application) {
 
-    val clusterSize = meshAccessManager.clusterSize
-    val battery = meshAccessManager.batteryInfo
-    val trapState = meshAccessManager.trapState
-    val mode = meshAccessManager.modeState
     var newMode: MatageekModule.MatageekMode = MatageekModule.MatageekMode.SETUP
 
     private suspend fun sendMatageekModeChangeMessageAsync(): Boolean {
         return suspendCancellableCoroutine {
-            if (mode.value == null || clusterSize.value == null) it.resume(false)
-            val newMode = if (mode.value!! == MatageekModule.MatageekMode.SETUP)
+            if (modeState.value == null || clusterSize.value == null) it.resume(false)
+            val newMode = if (modeState.value!! == MatageekModule.MatageekMode.SETUP)
                 MatageekModule.MatageekMode.DETECT else MatageekModule.MatageekMode.SETUP
             this.newMode = newMode
             val data: MatageekModule.MatageekModuleModeChangeMessage =
@@ -60,6 +56,6 @@ class DeviceActivatedViewModel(application: Application) :
                 }
             }
         }
-        if (result) mode.postValue(newMode)
+        if (result) modeState.postValue(newMode)
     }
 }

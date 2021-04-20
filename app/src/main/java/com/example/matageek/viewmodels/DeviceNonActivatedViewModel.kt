@@ -16,9 +16,6 @@ import kotlin.coroutines.resume
 class DeviceNonActivatedViewModel(application: Application) :
     AbstractDeviceConfigViewModel(application) {
 
-    val clusterSize = meshAccessManager.clusterSize
-    val battery = meshAccessManager.batteryInfo
-
     val enrolledNodeId: MutableList<Short> = mutableListOf()
 
     // TODO When enroll process success, device will reset so not all response can receive

@@ -2,8 +2,8 @@ package com.example.matageek.manager
 
 import com.example.matageek.fruity.module.MatageekModule
 
-interface MeshAccessObserver {
-    fun update(deviceInfo: DeviceInfo)
+interface DeviceInfoObserver {
+    fun updateDeviceInfo(deviceInfo: DeviceInfo)
 }
 
 data class DeviceInfo(

@@ -31,7 +31,7 @@ class DeviceActivatedFragment : Fragment() {
         deviceActivatedViewModel.deviceName.observe(viewLifecycleOwner, {
             bind.activatedDeviceName.text = it
         })
-        deviceActivatedViewModel.battery.observe(viewLifecycleOwner, {
+        deviceActivatedViewModel.batteryInfo.observe(viewLifecycleOwner, {
             bind.activatedBattery.text = "$it%"
             bind.icActivatedBattery.setImageLevel(0)
         })
@@ -43,7 +43,7 @@ class DeviceActivatedFragment : Fragment() {
             bind.icActivatedTrapState.drawable.setTint(ContextCompat.getColor(requireContext(),
                 if (it) R.color.trap_fired else R.color.trap_not_fired))
         })
-        deviceActivatedViewModel.mode.observe(viewLifecycleOwner, {
+        deviceActivatedViewModel.modeState.observe(viewLifecycleOwner, {
             bind.matageekMode.text =
                 if (it == MatageekModule.MatageekMode.SETUP) "SETUP" else "DETECT"
             bind.modeChangeButton.text =

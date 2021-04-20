@@ -5,7 +5,7 @@ import com.example.matageek.fruity.types.ConnPacketVendorModule
 import com.example.matageek.fruity.types.MessageType
 import com.example.matageek.manager.DeviceInfo
 import com.example.matageek.manager.MeshAccessManager
-import com.example.matageek.manager.MeshAccessObserver
+import com.example.matageek.manager.DeviceInfoObserver
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -17,19 +17,19 @@ abstract class Module(
 
     constructor(moduleName: String, vendorModuleId: Int) : this(moduleName, 0, vendorModuleId)
 
-    private val observers: MutableList<MeshAccessObserver> = mutableListOf()
+    private val observers: MutableList<DeviceInfoObserver> = mutableListOf()
 
-    fun addObserver(observer: MeshAccessObserver) {
+    fun addObserver(observer: DeviceInfoObserver) {
         observers.add(observer)
     }
 
-    fun deleteObserver(observer: MeshAccessObserver) {
+    fun deleteObserver(observer: DeviceInfoObserver) {
         observers.remove(observer)
     }
 
     fun notifyObserver(deviceInfo: DeviceInfo) {
         observers.forEach {
-            it.update(deviceInfo)
+            it.updateDeviceInfo(deviceInfo)
         }
     }
 

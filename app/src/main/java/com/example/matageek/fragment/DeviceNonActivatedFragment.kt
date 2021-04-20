@@ -31,7 +31,7 @@ class DeviceNonActivatedFragment : Fragment() {
         deviceNonActivatedViewModel.deviceName.observe(viewLifecycleOwner, {
             bind.activatedDeviceName.text = it
         })
-        deviceNonActivatedViewModel.battery.observe(viewLifecycleOwner, {
+        deviceNonActivatedViewModel.batteryInfo.observe(viewLifecycleOwner, {
             bind.activatedBattery.text = "$it%"
         })
         deviceNonActivatedViewModel.clusterSize.observe(viewLifecycleOwner, {
