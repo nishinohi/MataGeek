@@ -7,6 +7,7 @@ interface MeshAccessObserver {
 }
 
 data class DeviceInfo(
+    val nodeId: Short? = null,
     val clusterSize: Short? = null,
     val batteryInfo: Byte? = null,
     val trapState: Boolean? = null,

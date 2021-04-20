@@ -140,13 +140,13 @@ class DeviceConfigActivity : AppCompatActivity(),
 
     override fun onDeviceInfoUpdated() {
         deviceNamePreferences.getString(discoveredDevice.device.address, "Unknown Device")?.let {
-            currentViewModel.update(DeviceInfo(null, null, null, it))
+            currentViewModel.update(DeviceInfo(null, null, null, null, it))
         }
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment, deviceName: String) {
         deviceNamePreferences.edit().putString(discoveredDevice.device.address, deviceName).apply()
-        currentViewModel.update(DeviceInfo(null, null, null, deviceName))
+        currentViewModel.update(DeviceInfo(null, null, null, null, deviceName))
     }
 
     override fun onDialogNegativeClick(dialog: DialogFragment) {

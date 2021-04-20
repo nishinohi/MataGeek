@@ -13,7 +13,8 @@ class MatageekModule : Module("matageek", PrimitiveTypes.getVendorModuleId(
             MatageekModuleActionResponseMessages.STATE_RESPONSE.type -> {
                 val trapStateMessage = MatageekModuleStateMessage(packet.copyOfRange(
                     ConnPacketVendorModule.SIZEOF_PACKET, packet.size))
-                notifyObserver(DeviceInfo(null, null, trapStateMessage.trapState,
+                notifyObserver(DeviceInfo(vendorModulePacket.header.sender,
+                    null, null, trapStateMessage.trapState,
                     null, MatageekMode.getMode(trapStateMessage.mode)))
             }
             MatageekModuleActionResponseMessages.MODE_CHANGE_RESPONSE.type -> {

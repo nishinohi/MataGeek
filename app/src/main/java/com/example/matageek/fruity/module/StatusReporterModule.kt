@@ -19,7 +19,8 @@ class StatusReporterModule : Module("status", ModuleId.STATUS_REPORTER_MODULE.id
                     StatusReporterModuleStatusMessage.readFromBytePacket(packet.copyOfRange(
                         ConnPacketModule.SIZEOF_PACKET, packet.size))
                         ?: throw Exception("invalid Message")
-                notifyObserver(DeviceInfo(statusMessage.clusterSize, statusMessage.batteryInfo))
+                notifyObserver(DeviceInfo(modulePacket.header.sender,
+                    statusMessage.clusterSize, statusMessage.batteryInfo))
             }
             StatusModuleActionResponseMessages.ALL_CONNECTIONS.type -> {
                 val allConnectionsMessage = StatusReporterModuleConnectionsMessage(

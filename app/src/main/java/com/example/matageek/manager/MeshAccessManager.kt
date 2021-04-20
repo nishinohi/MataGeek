@@ -149,7 +149,7 @@ class MeshAccessManager(context: Context) :
                     MessageType.CLUSTER_INFO_UPDATE -> {
                         val clusterInfoUpdate =
                             ConnPacketClusterInfoUpdate(packet)
-                        update(DeviceInfo(clusterInfoUpdate.clusterSizeChange, null))
+                        update(DeviceInfo(null, clusterInfoUpdate.clusterSizeChange, null))
                     }
                     else -> {
                         Log.d("MATAG", "onDataReceived: Unknown Message $messageType")
@@ -184,6 +184,10 @@ class MeshAccessManager(context: Context) :
                 timeoutMap.remove(timeoutKey)
             }
         }
+    }
+
+    fun getPartnerId(): Short {
+        return meshAccessDataCallback.partnerId
     }
 
     override fun update(deviceInfo: DeviceInfo) {
