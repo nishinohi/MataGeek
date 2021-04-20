@@ -2,6 +2,7 @@ package com.example.matageek.fragment
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import com.example.matageek.dialog.DialogDeviceNameEdit
 import com.example.matageek.viewmodels.DeviceNonActivatedViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
 
 class DeviceNonActivatedFragment : Fragment() {
@@ -42,6 +44,9 @@ class DeviceNonActivatedFragment : Fragment() {
                 deviceNonActivatedViewModel.inProgress()
                 try {
                     deviceNonActivatedViewModel.sendEnrollmentBroadcastAppStart()
+                    Log.d("MATAG", "succ enrolled node ids: ${deviceNonActivatedViewModel.enrolledNodeId}")
+                } catch (e: TimeoutCancellationException) {
+                    Log.d("MATAG", "fail enrolled node ids: ${deviceNonActivatedViewModel.enrolledNodeId}")
                 } finally {
                     deviceNonActivatedViewModel.endProgress()
                     bind.activateButton.isClickable = true
