@@ -5,6 +5,7 @@ import android.os.ParcelUuid
 import androidx.lifecycle.LiveData
 import com.example.matageek.adapter.DiscoveredDevice
 import com.example.matageek.fruity.types.AdvStructureMeshAccessServiceData
+import com.example.matageek.fruity.types.FmTypes
 import com.example.matageek.manager.MeshAccessManager
 
 class DevicesLiveData(
@@ -59,7 +60,7 @@ class DevicesLiveData(
         val maServiceUuid =
             scanServiceUuids.find { parcelUuid ->
                 return (parcelUuid.uuid.toString().substring(0, 8)
-                    .compareTo(MeshAccessManager.MESH_SERVICE_DATA_SERVICE_UUID16.toString()
+                    .compareTo(FmTypes.MESH_SERVICE_DATA_SERVICE_UUID16.toString()
                         .substring(0, 8)) == 0)
             }
 
