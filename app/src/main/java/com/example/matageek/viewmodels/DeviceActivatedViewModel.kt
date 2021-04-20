@@ -21,7 +21,7 @@ class DeviceActivatedViewModel(application: Application) :
     val mode = meshAccessManager.modeState
     var newMode: MatageekModule.MatageekMode = MatageekModule.MatageekMode.SETUP
 
-    suspend fun sendMatageekModeChangeMessageAsync(): Boolean {
+    private suspend fun sendMatageekModeChangeMessageAsync(): Boolean {
         return suspendCancellableCoroutine {
             if (mode.value == null || clusterSize.value == null) it.resume(false)
             val newMode = if (mode.value!! == MatageekModule.MatageekMode.SETUP)
@@ -39,9 +39,7 @@ class DeviceActivatedViewModel(application: Application) :
             meshAccessManager.addTimeoutJob(
                 matageekModuleId,
                 MatageekModule.MatageekModuleActionResponseMessages.MODE_CHANGE_RESPONSE.type,
-                0, clusterSize.value!!) {
-                it.resume(true)
-            }
+                0, clusterSize.value!!, {it.resume(true)})
         }
     }
 

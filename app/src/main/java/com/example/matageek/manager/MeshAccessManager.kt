@@ -16,6 +16,7 @@ import com.example.matageek.fruity.types.*
 import com.example.matageek.profile.callback.MeshAccessDataCallback
 import com.example.matageek.profile.callback.EncryptionState
 import com.example.matageek.profile.FruityDataEncryptAndSplit
+import com.example.matageek.viewmodels.AbstractDeviceConfigViewModel
 import no.nordicsemi.android.ble.callback.SuccessCallback
 import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.livedata.ObservableBleManager
@@ -46,6 +47,7 @@ class MeshAccessManager(context: Context) :
     data class TimeOutCoroutineJobAndCounter<T>(
         var counter: Short,
         val successCallback: () -> Unit,
+        val customCallBack: ((packet: ByteArray) -> Unit)?
     )
 
     fun addTimeoutJob(
@@ -54,9 +56,10 @@ class MeshAccessManager(context: Context) :
         requestHandle: Byte,
         counter: Short,
         successCallback: () -> Unit,
+        customCallBack: ((packet: ByteArray) -> Unit)? = null
     ) {
         timeoutMap[generateTimeoutKey(moduleId, actionType, requestHandle)] =
-            TimeOutCoroutineJobAndCounter(counter, successCallback)
+            TimeOutCoroutineJobAndCounter(counter, successCallback, customCallBack)
     }
 
     fun generateTimeoutKey(moduleId: Int, actionType: Byte, requestHandle: Byte): Long {
@@ -174,6 +177,7 @@ class MeshAccessManager(context: Context) :
         timeoutMap[timeoutKey]?.let {
             --(it.counter)
             Log.d("MATAG", "timeout counter: ${it.counter}")
+            it.customCallBack?.let { customCallback -> customCallback(packet)}
             if (it.counter == 0.toShort()) {
                 Log.d("MATAG", "timeout counter: job cancel")
                 it.successCallback()
