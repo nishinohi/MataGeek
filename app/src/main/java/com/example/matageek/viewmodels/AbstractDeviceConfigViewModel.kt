@@ -13,6 +13,7 @@ import no.nordicsemi.android.ble.livedata.state.ConnectionState
 abstract class AbstractDeviceConfigViewModel(application: Application) :
     AndroidViewModel(application) {
     protected val meshAccessManager: MeshAccessManager = MeshAccessManager(application)
+    val currentNodeId: MutableLiveData<Short> = MutableLiveData()
     val connectionState: LiveData<ConnectionState> = meshAccessManager.state
     val handShakeState = meshAccessManager.handShakeState
     val deviceName: MutableLiveData<String> = MutableLiveData()
@@ -61,6 +62,13 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
         deviceInfo.trapState?.let { meshAccessManager.trapState.postValue(it) }
         deviceInfo.deviceName?.let { deviceName.postValue(it) }
         deviceInfo.matageekMode?.let { meshAccessManager.modeState.postValue(it) }
+    }
+
+    /**
+     * If you specify no nodeIds, update by partnerId
+     */
+    fun updateCurrentNodeId(nodeId: Short?) {
+        currentNodeId.postValue(nodeId ?: meshAccessManager.getPartnerId())
     }
 
 }

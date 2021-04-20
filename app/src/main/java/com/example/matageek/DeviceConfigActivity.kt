@@ -129,7 +129,9 @@ class DeviceConfigActivity : AppCompatActivity(),
                 fragmentTransaction.add(R.id.activated_device_fragment,
                     if (discoveredDevice.enrolled) DeviceActivatedFragment() else DeviceNonActivatedFragment())
                 fragmentTransaction.commit()
+                currentViewModel.updateCurrentNodeId(null)
             }
+            else -> throw Exception("Unknown Handshake state")
         }
     }
 
