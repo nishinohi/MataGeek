@@ -18,7 +18,7 @@ import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 
-abstract class MeshAccessDataCallback() :
+abstract class MeshAccessDataCallback :
     DataReceivedCallback, DataSentCallback {
     lateinit var maRxCharacteristic: BluetoothGattCharacteristic
     lateinit var maTxCharacteristic: BluetoothGattCharacteristic
