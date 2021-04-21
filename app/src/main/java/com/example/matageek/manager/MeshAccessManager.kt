@@ -188,6 +188,9 @@ class MeshAccessManager(context: Context) :
         return meshAccessDataCallback.partnerId
     }
 
+    /**
+     * TODO fix to WrappedModuleId
+     */
     private fun <T : Module> findModuleById(moduleId: Int): T {
         val module = modules.find {
             (it.vendorModuleId == 0 && it.moduleId == moduleId.toByte()) ||
