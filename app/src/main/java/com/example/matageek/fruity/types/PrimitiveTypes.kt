@@ -14,6 +14,10 @@ class PrimitiveTypes {
         fun isVendorModuleId(moduleId: Byte): Boolean {
             return moduleId == ModuleId.VENDOR_MODULE_ID_PREFIX.id
         }
+
+        fun isVendorModuleId(wrappedModuleId: Int): Boolean {
+            return ModuleIdWrapper(wrappedModuleId).prefix == ModuleId.VENDOR_MODULE_ID_PREFIX.id
+        }
     }
 }
 

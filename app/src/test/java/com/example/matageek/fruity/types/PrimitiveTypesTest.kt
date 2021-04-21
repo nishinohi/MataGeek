@@ -7,25 +7,29 @@ import org.junit.Test
 class PrimitiveTypesTest : TestCase() {
     @Test
     fun test_ModuleIdWrapper() {
-        val moduleIdWrapperFromVendorId =
+        val vendorModuleIdWrapperFromVendorId =
             ModuleIdWrapper(ModuleId.VENDOR_MODULE_ID_PREFIX.id, 1, 0xAB24.toShort())
         // VENDOR_MODULE_ID_PREFIX = 0xF0
-        assert(moduleIdWrapperFromVendorId.wrappedModuleId == 0xAB2401F0.toInt())
+        assert(vendorModuleIdWrapperFromVendorId.wrappedModuleId == 0xAB2401F0.toInt())
+        assert(PrimitiveTypes.isVendorModuleId(vendorModuleIdWrapperFromVendorId.wrappedModuleId))
         val moduleIdWrapperFromPrimaryModuleId =
             ModuleIdWrapper(ModuleId.STATUS_REPORTER_MODULE.id)
         assert(moduleIdWrapperFromPrimaryModuleId.prefix == ModuleId.STATUS_REPORTER_MODULE.id)
         assert(moduleIdWrapperFromPrimaryModuleId.subId == ModuleIdWrapper.SUB_ID_FOR_PRIMARY_MODULE_ID)
         assert(moduleIdWrapperFromPrimaryModuleId.vendorId == ModuleIdWrapper.VENDOR_ID_FOR_PRIMARY_MODULE_ID)
         assert(moduleIdWrapperFromPrimaryModuleId.wrappedModuleId == 0xFFFFFF03.toInt())
-        val moduleIdWrapperFromWrappedId =
+        assert(!PrimitiveTypes.isVendorModuleId(moduleIdWrapperFromPrimaryModuleId.wrappedModuleId))
+        val vendorModuleIdWrapperFromWrappedId =
             ModuleIdWrapper(0xAB2401F0.toInt())
-        assert(moduleIdWrapperFromWrappedId.prefix == ModuleId.VENDOR_MODULE_ID_PREFIX.id)
-        assert(moduleIdWrapperFromWrappedId.subId == 1.toByte())
-        assert(moduleIdWrapperFromWrappedId.vendorId == 0xAB24.toShort())
-        val _moduleIdWrapperFromWrappedId =
+        assert(vendorModuleIdWrapperFromWrappedId.prefix == ModuleId.VENDOR_MODULE_ID_PREFIX.id)
+        assert(vendorModuleIdWrapperFromWrappedId.subId == 1.toByte())
+        assert(vendorModuleIdWrapperFromWrappedId.vendorId == 0xAB24.toShort())
+        assert(PrimitiveTypes.isVendorModuleId(vendorModuleIdWrapperFromWrappedId.wrappedModuleId))
+        val moduleIdWrapperFromWrappedId =
             ModuleIdWrapper(0xFFFFFF03.toInt())
-        assert(_moduleIdWrapperFromWrappedId.prefix == ModuleId.STATUS_REPORTER_MODULE.id)
-        assert(_moduleIdWrapperFromWrappedId.subId == ModuleIdWrapper.SUB_ID_FOR_PRIMARY_MODULE_ID)
-        assert(_moduleIdWrapperFromWrappedId.vendorId == ModuleIdWrapper.VENDOR_ID_FOR_PRIMARY_MODULE_ID)
+        assert(moduleIdWrapperFromWrappedId.prefix == ModuleId.STATUS_REPORTER_MODULE.id)
+        assert(moduleIdWrapperFromWrappedId.subId == ModuleIdWrapper.SUB_ID_FOR_PRIMARY_MODULE_ID)
+        assert(moduleIdWrapperFromWrappedId.vendorId == ModuleIdWrapper.VENDOR_ID_FOR_PRIMARY_MODULE_ID)
+        assert(!PrimitiveTypes.isVendorModuleId(moduleIdWrapperFromWrappedId.wrappedModuleId))
     }
 }
