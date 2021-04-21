@@ -21,11 +21,22 @@ class PrimitiveTypes {
     }
 }
 
+/**
+ * vendorId is not equal vendorModuleId
+ * vendorId is an element of vendorModuleId
+ */
 class ModuleIdWrapper {
     val prefix: Byte
     val subId: Byte
     val vendorId: Short
     val wrappedModuleId: Int
+    val isVendorModuleId
+        get() = prefix == ModuleId.VENDOR_MODULE_ID_PREFIX.id
+    val primaryModuleId: Byte
+        get() {
+            if (isVendorModuleId) return ModuleId.INVALID_MODULE.id
+            return prefix
+        }
 
     constructor(prefix: Byte, subId: Byte, vendorId: Short) {
         this.prefix = prefix
@@ -57,6 +68,10 @@ class ModuleIdWrapper {
     }
 
     companion object {
+        fun generateVendorModuleIdWrapper(vendorId: Short, subId: Byte): ModuleIdWrapper {
+            return ModuleIdWrapper(ModuleId.VENDOR_MODULE_ID_PREFIX.id, subId, vendorId)
+        }
+
         const val SUB_ID_FOR_PRIMARY_MODULE_ID: Byte = 0xFF.toByte()
         const val VENDOR_ID_FOR_PRIMARY_MODULE_ID: Short = 0xFFFF.toShort()
     }

@@ -24,7 +24,7 @@ class DeviceNonActivatedViewModel(application: Application) :
         return suspendCancellableCoroutine {
             meshAccessManager.sendEnrollmentBroadcastAppStart()
             meshAccessManager.addTimeoutJob(
-                ModuleIdWrapper(ModuleId.ENROLLMENT_MODULE.id).wrappedModuleId,
+                ModuleIdWrapper(ModuleId.ENROLLMENT_MODULE.id),
                 EnrollmentModule.EnrollmentModuleActionResponseMessages.ENROLLMENT_RESPONSE.type,
                 0, clusterSize.value!!, { it.resume(true) }) {
                 addEnrolledNodeId(it)

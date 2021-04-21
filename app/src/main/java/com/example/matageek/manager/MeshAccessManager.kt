@@ -44,20 +44,19 @@ class MeshAccessManager(context: Context) :
     )
 
     fun addTimeoutJob(
-        moduleId: Int,
-        actionType: Byte,
-        requestHandle: Byte,
-        counter: Short,
-        successCallback: () -> Unit,
-        customCallBack: ((packet: ByteArray) -> Unit)? = null,
+        moduleIdWrapper: ModuleIdWrapper, actionType: Byte, requestHandle: Byte, counter: Short,
+        successCallback: () -> Unit, customCallBack: ((packet: ByteArray) -> Unit)? = null,
     ) {
-        timeoutMap[generateTimeoutKey(moduleId, actionType, requestHandle)] =
+        timeoutMap[generateTimeoutKey(moduleIdWrapper, actionType, requestHandle)] =
             TimeOutCoroutineJobAndCounter(counter, successCallback, customCallBack)
     }
 
-    fun generateTimeoutKey(moduleId: Int, actionType: Byte, requestHandle: Byte): Long {
-        val byteBuffer = ByteBuffer.allocate(Long.SIZE_BYTES).putInt(moduleId)
-            .put(actionType).put(requestHandle)
+    fun generateTimeoutKey(
+        moduleIdWrapper: ModuleIdWrapper, actionType: Byte, requestHandle: Byte,
+    ): Long {
+        val byteBuffer =
+            ByteBuffer.allocate(Long.SIZE_BYTES).putInt(moduleIdWrapper.wrappedModuleId)
+                .put(actionType).put(requestHandle)
         byteBuffer.clear()
         return byteBuffer.long
     }
@@ -116,17 +115,18 @@ class MeshAccessManager(context: Context) :
                         this@MeshAccessManager.handShakeState.postValue(HandShakeState.HANDSHAKE_DONE)
                         val callback = SuccessCallback {
                             sendModuleActionTriggerMessage(
-                                PrimitiveTypes.getVendorModuleId(VendorModuleId.MATAGEEK_MODULE.id,
+                                ModuleIdWrapper.generateVendorModuleIdWrapper(VendorModuleId.MATAGEEK_MODULE.id,
                                     1),
                                 MatageekModule.MatageekModuleTriggerActionMessages.STATE.type
                             )
                         }
                         sendModuleActionTriggerMessage(
-                            ModuleId.STATUS_REPORTER_MODULE.id.toUByte().toInt(),
+                            ModuleIdWrapper(ModuleId.STATUS_REPORTER_MODULE.id),
                             StatusReporterModule.StatusModuleTriggerActionMessages.GET_STATUS.type,
                             this.partnerId, null, 0, callback)
-//                        sendStatusTriggerActionMessage(StatusReporterModule.StatusModuleTriggerActionMessages.GET_ALL_CONNECTIONS,
-//                            PrimitiveTypes.NODE_ID_BROADCAST)
+                        sendModuleActionTriggerMessage(ModuleIdWrapper(ModuleId.STATUS_REPORTER_MODULE.id),
+                            StatusReporterModule.StatusModuleTriggerActionMessages.GET_ALL_CONNECTIONS.type,
+                            PrimitiveTypes.NODE_ID_BROADCAST)
                     }
                     MessageType.SPLIT_WRITE_CMD -> {
                         val splitPacket = PacketSplitHeader(packet)
@@ -158,20 +158,21 @@ class MeshAccessManager(context: Context) :
 
     fun moduleMessageReceivedHandler(packet: ByteArray) {
         val modulePacket = ConnPacketModule(packet)
-        modules.find { it.moduleId != 0.toByte() && modulePacket.moduleId == it.moduleId }
+        modules.find { it.moduleIdWrapper.primaryModuleId == modulePacket.moduleId }
             ?.actionResponseMessageReceivedHandler(packet)
         val vendorModulePacket = ConnPacketVendorModule(packet)
-        modules.find { it.vendorModuleId != 0 && vendorModulePacket.vendorModuleId == it.vendorModuleId }
+        modules.find { it.moduleIdWrapper.wrappedModuleId == vendorModulePacket.vendorModuleId }
             ?.actionResponseMessageReceivedHandler(packet)
 
         val isVendorModuleId = PrimitiveTypes.isVendorModuleId(modulePacket.moduleId)
-        val wrapperModuleId = if (isVendorModuleId) vendorModulePacket.vendorModuleId else
-            ModuleIdWrapper(modulePacket.moduleId).wrappedModuleId
+        val moduleIdWrapper =
+            if (isVendorModuleId) ModuleIdWrapper(vendorModulePacket.vendorModuleId) else
+                ModuleIdWrapper(modulePacket.moduleId)
         val actionType =
             if (isVendorModuleId) vendorModulePacket.actionType else modulePacket.actionType
         val requestHandle =
             if (isVendorModuleId) vendorModulePacket.requestHandle else modulePacket.requestHandle
-        val timeoutKey = generateTimeoutKey(wrapperModuleId, actionType, requestHandle)
+        val timeoutKey = generateTimeoutKey(moduleIdWrapper, actionType, requestHandle)
         timeoutMap[timeoutKey]?.let {
             --(it.counter)
             Log.d("MATAG", "timeout counter: ${it.counter}")
@@ -188,13 +189,13 @@ class MeshAccessManager(context: Context) :
         return meshAccessDataCallback.partnerId
     }
 
-    /**
-     * TODO fix to WrappedModuleId
-     */
-    private fun <T : Module> findModuleById(moduleId: Int): T {
+    private fun <T : Module> findModuleById(primaryModuleId: Byte): T {
+        return findModuleById(ModuleIdWrapper(primaryModuleId).wrappedModuleId)
+    }
+
+    private fun <T : Module> findModuleById(wrappedModuleId: Int): T {
         val module = modules.find {
-            (it.vendorModuleId == 0 && it.moduleId == moduleId.toByte()) ||
-                    (it.moduleId == 0.toByte() && it.vendorModuleId == moduleId)
+            it.moduleIdWrapper.wrappedModuleId == wrappedModuleId
         }
             ?: throw Exception("Module not found")
         return module as? T
@@ -219,9 +220,7 @@ class MeshAccessManager(context: Context) :
     }
 
     fun sendEnrollmentBroadcastAppStart() {
-        val enrollModule =
-            modules.find { it.moduleId == ModuleId.ENROLLMENT_MODULE.id }
-                ?: throw Exception("Module not exist")
+        val enrollModule = findModuleById<EnrollmentModule>(ModuleId.ENROLLMENT_MODULE.id)
 
         // TODO not secure!!
         if (!networkKeyPreference.contains(context.getString(R.string.network_key))) {
@@ -244,11 +243,11 @@ class MeshAccessManager(context: Context) :
     }
 
     fun sendModuleActionTriggerMessage(
-        moduleId: Int, actionType: Byte, receiver: Short = meshAccessDataCallback.partnerId,
-        additionalData: ByteArray? = null, additionalDataSize: Int = 0,
-        callback: SuccessCallback? = null,
+        moduleIdWrapper: ModuleIdWrapper, actionType: Byte,
+        receiver: Short = meshAccessDataCallback.partnerId, additionalData: ByteArray? = null,
+        additionalDataSize: Int = 0, callback: SuccessCallback? = null,
     ) {
-        val module = findModuleById<Module>(moduleId)
+        val module = findModuleById<Module>(moduleIdWrapper.wrappedModuleId)
         meshAccessDataCallback.sendPacket(
             module.createTriggerActionMessagePacket(receiver,
                 actionType, additionalData, additionalDataSize),

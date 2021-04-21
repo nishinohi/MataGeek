@@ -19,6 +19,7 @@ class PrimitiveTypesTest : TestCase() {
         assert(moduleIdWrapperFromPrimaryModuleId.vendorId == ModuleIdWrapper.VENDOR_ID_FOR_PRIMARY_MODULE_ID)
         assert(moduleIdWrapperFromPrimaryModuleId.wrappedModuleId == 0xFFFFFF03.toInt())
         assert(!PrimitiveTypes.isVendorModuleId(moduleIdWrapperFromPrimaryModuleId.wrappedModuleId))
+        assert(moduleIdWrapperFromPrimaryModuleId.primaryModuleId == ModuleId.STATUS_REPORTER_MODULE.id)
         val vendorModuleIdWrapperFromWrappedId =
             ModuleIdWrapper(0xAB2401F0.toInt())
         assert(vendorModuleIdWrapperFromWrappedId.prefix == ModuleId.VENDOR_MODULE_ID_PREFIX.id)
@@ -31,5 +32,6 @@ class PrimitiveTypesTest : TestCase() {
         assert(moduleIdWrapperFromWrappedId.subId == ModuleIdWrapper.SUB_ID_FOR_PRIMARY_MODULE_ID)
         assert(moduleIdWrapperFromWrappedId.vendorId == ModuleIdWrapper.VENDOR_ID_FOR_PRIMARY_MODULE_ID)
         assert(!PrimitiveTypes.isVendorModuleId(moduleIdWrapperFromWrappedId.wrappedModuleId))
+        assert(moduleIdWrapperFromWrappedId.primaryModuleId == ModuleId.STATUS_REPORTER_MODULE.id)
     }
 }

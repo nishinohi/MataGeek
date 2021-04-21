@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.matageek.fruity.module.MatageekModule
+import com.example.matageek.fruity.types.ModuleIdWrapper
 import com.example.matageek.fruity.types.PrimitiveTypes
 import com.example.matageek.fruity.types.VendorModuleId
 import kotlinx.coroutines.TimeoutCancellationException
@@ -25,17 +26,18 @@ class DeviceActivatedViewModel(application: Application) :
             this.newMode = newMode
             val data: MatageekModule.MatageekModuleModeChangeMessage =
                 MatageekModule.MatageekModuleModeChangeMessage(newMode, clusterSize.value!!)
-            val matageekModuleId =
-                PrimitiveTypes.getVendorModuleId(VendorModuleId.MATAGEEK_MODULE.id, 1)
-            meshAccessManager.sendModuleActionTriggerMessage(matageekModuleId,
+            val matageekModuleIdWrapper =
+                ModuleIdWrapper.generateVendorModuleIdWrapper(VendorModuleId.MATAGEEK_MODULE.id, 1)
+            meshAccessManager.sendModuleActionTriggerMessage(
+                matageekModuleIdWrapper,
                 MatageekModule.MatageekModuleTriggerActionMessages.MODE_CHANGE.type,
                 PrimitiveTypes.NODE_ID_BROADCAST, data.createBytePacket(),
                 MatageekModule.MatageekModuleModeChangeMessage.SIZEOF_PACKET)
 
             meshAccessManager.addTimeoutJob(
-                matageekModuleId,
+                matageekModuleIdWrapper,
                 MatageekModule.MatageekModuleActionResponseMessages.MODE_CHANGE_RESPONSE.type,
-                0, clusterSize.value!!, {it.resume(true)})
+                0, clusterSize.value!!, { it.resume(true) })
         }
     }
 
@@ -45,12 +47,12 @@ class DeviceActivatedViewModel(application: Application) :
                 try {
                     sendMatageekModeChangeMessageAsync()
                 } catch (e: TimeoutCancellationException) {
-                    val matageekModuleId =
-                        PrimitiveTypes.getVendorModuleId(VendorModuleId.MATAGEEK_MODULE.id, 1)
+                    val matageekModuleId = ModuleIdWrapper.generateVendorModuleIdWrapper(
+                        VendorModuleId.MATAGEEK_MODULE.id, 1)
                     val key = meshAccessManager.generateTimeoutKey(matageekModuleId,
                         MatageekModule.MatageekModuleActionResponseMessages.MODE_CHANGE_RESPONSE.type,
                         0)
-                    Log.d("MATAG", "timeout")
+                    Log.d("MATAG", "timeout and delete key: $key")
                     meshAccessManager.timeoutMap.remove(key)
                     false
                 }

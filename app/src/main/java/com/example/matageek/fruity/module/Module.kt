@@ -3,6 +3,7 @@ package com.example.matageek.fruity.module
 import com.example.matageek.fruity.types.ConnPacketModule
 import com.example.matageek.fruity.types.ConnPacketVendorModule
 import com.example.matageek.fruity.types.MessageType
+import com.example.matageek.fruity.types.ModuleIdWrapper
 import com.example.matageek.manager.DeviceInfo
 import com.example.matageek.manager.MeshAccessManager
 import com.example.matageek.manager.DeviceInfoObserver
@@ -11,12 +12,8 @@ import java.nio.ByteOrder
 
 abstract class Module(
     protected val moduleName: String,
-    val moduleId: Byte,
-    val vendorModuleId: Int = 0,
+    val moduleIdWrapper: ModuleIdWrapper,
 ) {
-
-    constructor(moduleName: String, vendorModuleId: Int) : this(moduleName, 0, vendorModuleId)
-
     private val observers: MutableList<DeviceInfoObserver> = mutableListOf()
 
     fun addObserver(observer: DeviceInfoObserver) {
@@ -33,28 +30,24 @@ abstract class Module(
         }
     }
 
-    private fun isVendorModule(): Boolean {
-        return moduleId == 0.toByte()
-    }
-
     //TODO: reliable is currently not supported and by default false. The input is ignored
     protected fun createSendModuleActionMessagePacket(
         messageType: MessageType, receiver: Short, requestHandle: Byte, actionType: Byte,
         additionalData: ByteArray?, additionalDataSize: Int, reliable: Boolean,
     ): ByteArray {
         val headerSize =
-            if (isVendorModule()) ConnPacketVendorModule.SIZEOF_PACKET else ConnPacketModule.SIZEOF_PACKET
+            if (moduleIdWrapper.isVendorModuleId) ConnPacketVendorModule.SIZEOF_PACKET else ConnPacketModule.SIZEOF_PACKET
         val packetBuf =
             ByteBuffer.allocate(headerSize + additionalDataSize).order(ByteOrder.LITTLE_ENDIAN)
 
-        if (isVendorModule()) {
+        if (moduleIdWrapper.isVendorModuleId) {
             val connPacketVendorModule = ConnPacketVendorModule(
-                messageType, MeshAccessManager.NODE_ID, receiver, vendorModuleId,
+                messageType, MeshAccessManager.NODE_ID, receiver, moduleIdWrapper.wrappedModuleId,
                 requestHandle, actionType)
             packetBuf.put(connPacketVendorModule.createBytePacket())
         } else {
             val connPacketModule = ConnPacketModule(
-                messageType, MeshAccessManager.NODE_ID, receiver, moduleId,
+                messageType, MeshAccessManager.NODE_ID, receiver, moduleIdWrapper.primaryModuleId,
                 requestHandle, actionType)
             packetBuf.put(connPacketModule.createBytePacket())
         }

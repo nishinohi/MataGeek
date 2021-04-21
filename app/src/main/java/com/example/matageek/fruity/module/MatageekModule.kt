@@ -4,8 +4,8 @@ import com.example.matageek.customexception.MessagePacketSizeException
 import com.example.matageek.fruity.types.*
 import com.example.matageek.manager.DeviceInfo
 
-class MatageekModule : Module("matageek", PrimitiveTypes.getVendorModuleId(
-    0xAB24.toShort(), 1)
+class MatageekModule : Module("matageek", ModuleIdWrapper.generateVendorModuleIdWrapper(
+    VendorModuleId.MATAGEEK_MODULE.id, 1)
 ) {
     override fun actionResponseMessageReceivedHandler(packet: ByteArray) {
         val vendorModulePacket = ConnPacketVendorModule(packet)
