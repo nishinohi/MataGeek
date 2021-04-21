@@ -14,19 +14,23 @@ import no.nordicsemi.android.ble.livedata.state.ConnectionState
 
 abstract class AbstractDeviceConfigViewModel(application: Application) :
     AndroidViewModel(application), DeviceInfoObserver {
-    protected val meshAccessManager: MeshAccessManager = MeshAccessManager(application, this)
+    protected val meshAccessManager: MeshAccessManager = MeshAccessManager(application)
     val currentNodeId: MutableLiveData<Short> = MutableLiveData()
     val connectionState: LiveData<ConnectionState> = meshAccessManager.state
     val handShakeState = meshAccessManager.handShakeState
     val deviceName: MutableLiveData<String> = MutableLiveData()
     val progressState: MutableLiveData<Boolean> = MutableLiveData()
-
+    /** device config */
     val clusterSize: MutableLiveData<Short> = MutableLiveData()
     val batteryInfo: MutableLiveData<Byte> = MutableLiveData()
     val trapState: MutableLiveData<Boolean> = MutableLiveData()
     val modeState: MutableLiveData<MatageekModule.MatageekMode> = MutableLiveData()
 
     private lateinit var discoveredDevice: DiscoveredDevice
+
+    fun addDeviceInfoObserver() {
+        meshAccessManager.addDeviceInfoObserver(this)
+    }
 
     fun connect(discoveredDevice: DiscoveredDevice) {
         this.discoveredDevice = discoveredDevice

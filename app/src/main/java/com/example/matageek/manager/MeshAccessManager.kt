@@ -26,7 +26,7 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import kotlin.Exception
 
-class MeshAccessManager(context: Context, deviceInfoObserver: DeviceInfoObserver) :
+class MeshAccessManager(context: Context) :
     ObservableBleManager(context) {
 
     /** MeshAccessService Characteristics */
@@ -74,6 +74,9 @@ class MeshAccessManager(context: Context, deviceInfoObserver: DeviceInfoObserver
         modules.add(StatusReporterModule())
         modules.add(EnrollmentModule())
         modules.add(MatageekModule())
+    }
+
+    fun addDeviceInfoObserver(deviceInfoObserver: DeviceInfoObserver) {
         modules.forEach { it.addObserver(deviceInfoObserver) }
     }
 
