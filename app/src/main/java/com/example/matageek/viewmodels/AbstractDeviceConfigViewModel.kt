@@ -76,9 +76,6 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
         deviceInfo.deviceName?.let { deviceName.postValue(it) }
     }
 
-    /**
-     * If you specify no nodeIds, update by partnerId
-     */
     fun updateCurrentNodeIdByPartnerId() {
         currentNodeId.postValue(meshAccessManager.getPartnerId())
     }
