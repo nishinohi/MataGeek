@@ -63,10 +63,6 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
         progressState.postValue(false)
     }
 
-    companion object {
-        const val EXTRA_DEVICE: String = "com.matageek.EXTRA_DEVICE"
-    }
-
     override fun updateDeviceInfo(deviceInfo: DeviceInfo) {
         deviceInfo.nodeId?.let { currentNodeId.postValue(it) }
         deviceInfo.clusterSize?.let { clusterSize.postValue(it) }
@@ -78,6 +74,10 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
 
     fun updateCurrentNodeIdByPartnerId() {
         currentNodeId.postValue(meshAccessManager.getPartnerId())
+    }
+
+    companion object {
+        const val EXTRA_DEVICE: String = "com.matageek.EXTRA_DEVICE"
     }
 
 }
