@@ -131,6 +131,7 @@ class DeviceConfigActivity : AppCompatActivity(),
                     if (discoveredDevice.enrolled) DeviceActivatedFragment() else DeviceNonActivatedFragment())
                 fragmentTransaction.commit()
                 currentViewModel.updateCurrentNodeIdByPartnerId()
+                currentViewModel.updateMeshGraph()
             }
             else -> throw Exception("Unknown Handshake state")
         }

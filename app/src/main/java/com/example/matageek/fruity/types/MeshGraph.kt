@@ -1,6 +1,6 @@
 package com.example.matageek.fruity.types
 
-class MeshGraph(val rootNodeId: Short) {
+class MeshGraph(var rootNodeId: Short) {
     val meshes: MutableList<SubMeshGraph> = mutableListOf()
     val tempMeshes: MutableList<SubMeshGraph> = mutableListOf()
     val nodeIdMap: MutableMap<Short, Short> = mutableMapOf()
@@ -9,6 +9,12 @@ class MeshGraph(val rootNodeId: Short) {
 
     init {
         nodeIdMap[rootNodeId] = rootNodeId
+    }
+
+    fun clear() {
+        meshes.clear()
+        nodeIdMap.clear()
+        tempMeshes.clear()
     }
 
     fun addNode(from: Short, to: Short) {

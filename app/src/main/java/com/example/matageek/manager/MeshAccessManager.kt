@@ -124,9 +124,6 @@ class MeshAccessManager(context: Context) :
                             ModuleIdWrapper(ModuleId.STATUS_REPORTER_MODULE.id),
                             StatusReporterModule.StatusModuleTriggerActionMessages.GET_STATUS.type,
                             this.partnerId, null, 0, callback)
-                        sendModuleActionTriggerMessage(ModuleIdWrapper(ModuleId.STATUS_REPORTER_MODULE.id),
-                            StatusReporterModule.StatusModuleTriggerActionMessages.GET_ALL_CONNECTIONS.type,
-                            PrimitiveTypes.NODE_ID_BROADCAST)
                     }
                     MessageType.SPLIT_WRITE_CMD -> {
                         val splitPacket = PacketSplitHeader(packet)
