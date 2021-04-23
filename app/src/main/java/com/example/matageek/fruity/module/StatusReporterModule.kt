@@ -42,8 +42,9 @@ class StatusReporterModule : Module("status", ModuleIdWrapper(ModuleId.STATUS_RE
     ) {
         companion object {
             private const val SIZEOF_PACKET = 9
-            fun readFromBytePacket(bytePacket: ByteArray): StatusReporterModuleStatusMessage? {
-                if (bytePacket.size < SIZEOF_PACKET) return null
+            fun readFromBytePacket(bytePacket: ByteArray): StatusReporterModuleStatusMessage {
+                if (bytePacket.size < SIZEOF_PACKET) throw MessagePacketSizeException(this::class.java.toString(),
+                    SIZEOF_PACKET)
                 val byteBuffer = ByteBuffer.wrap(bytePacket).order(ByteOrder.LITTLE_ENDIAN)
                 return StatusReporterModuleStatusMessage(byteBuffer.short,
                     byteBuffer.short, byteBuffer.get(), byteBuffer.get(), byteBuffer.get(),
