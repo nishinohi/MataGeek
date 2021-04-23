@@ -75,37 +75,99 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
         progressState.postValue(false)
     }
 
-    private suspend fun sendGetAllConnectionAsync(customCallback: (packet: ByteArray) -> Unit): Boolean {
+    private suspend fun sendModuleActionTriggerMessageAsync(
+        targetNodeId: Short, moduleIdWrapper: ModuleIdWrapper, triggerActionType: Byte,
+        responseActionType: Byte, counter: Short,
+        customCallback: ((packet: ByteArray) -> Unit)? = null,
+    ): Boolean {
         return suspendCancellableCoroutine {
-            val statusModuleIdWrapper = ModuleIdWrapper(ModuleId.STATUS_REPORTER_MODULE.id)
-            meshAccessManager.sendModuleActionTriggerMessage(statusModuleIdWrapper,
-                StatusReporterModule.StatusModuleTriggerActionMessages.GET_ALL_CONNECTIONS.type,
-                PrimitiveTypes.NODE_ID_BROADCAST)
-            meshAccessManager.addTimeoutJob(statusModuleIdWrapper,
-                StatusReporterModule.StatusModuleTriggerActionMessages.GET_ALL_CONNECTIONS.type,
-                0, clusterSize.value ?: 0, { it.resume(true) }, customCallback)
+            meshAccessManager.sendModuleActionTriggerMessage(moduleIdWrapper,
+                triggerActionType, targetNodeId)
+            meshAccessManager.addTimeoutJob(moduleIdWrapper, responseActionType, 0, counter,
+                { it.resume(true) }, customCallback)
         }
     }
 
-    fun updateMeshGraph(timeoutMillis: Long = 5000, failedCallback: (() -> Unit)? = null) {
+    fun updateMatageekStatus(
+        targetNodeId: Short = meshAccessManager.getPartnerId(),
+        failedCallback: (() -> Unit)? = null, timeoutMillis: Long = 5000,
+    ) {
+        viewModelScope.launch {
+            withTimeout(timeoutMillis) {
+                try {
+                    sendModuleActionTriggerMessageAsync(
+                        targetNodeId,
+                        ModuleIdWrapper.generateVendorModuleIdWrapper(VendorModuleId.MATAGEEK_MODULE.id,
+                            1),
+                        MatageekModule.MatageekModuleTriggerActionMessages.STATE.type,
+                        MatageekModule.MatageekModuleActionResponseMessages.STATE_RESPONSE.type,
+                        1) { packet ->
+                        val trapStateMessage =
+                            MatageekModule.MatageekModuleStateMessage(packet.copyOfRange(
+                                ConnPacketVendorModule.SIZEOF_PACKET, packet.size))
+                        updateDeviceInfo(DeviceInfo(targetNodeId,
+                            null, null, trapStateMessage.trapState,
+                            null, MatageekModule.MatageekMode.getMode(trapStateMessage.mode)))
+                    }
+                } catch (e: TimeoutCancellationException) {
+                    failedCallback?.let { it() }
+                }
+            }
+        }
+    }
+
+    fun updateDeviceInfo(
+        targetNodeId: Short = meshAccessManager.getPartnerId(),
+        failedCallback: (() -> Unit)? = null, timeoutMillis: Long = 5000,
+    ) {
+        viewModelScope.launch {
+            withTimeout(timeoutMillis) {
+                try {
+                    sendModuleActionTriggerMessageAsync(targetNodeId,
+                        ModuleIdWrapper(ModuleId.STATUS_REPORTER_MODULE.id),
+                        StatusReporterModule.StatusModuleTriggerActionMessages.GET_STATUS.type,
+                        StatusReporterModule.StatusModuleActionResponseMessages.STATUS.type,
+                        1) { packet ->
+                        val statusMessage =
+                            StatusReporterModule.StatusReporterModuleStatusMessage.readFromBytePacket(
+                                packet.copyOfRange(ConnPacketModule.SIZEOF_PACKET, packet.size))
+                        updateDeviceInfo(DeviceInfo(targetNodeId,
+                            statusMessage.clusterSize, statusMessage.batteryInfo))
+                    }
+                } catch (e: TimeoutCancellationException) {
+                    failedCallback?.let { it() }
+                }
+            }
+        }
+    }
+
+    fun updateMeshGraph(failedCallback: (() -> Unit)? = null, timeoutMillis: Long = 5000) {
         viewModelScope.launch {
             withTimeout(timeoutMillis) {
                 meshGraph.clear()
                 meshGraph.rootNodeId = meshAccessManager.getPartnerId()
-                sendGetAllConnectionAsync(fun(packet: ByteArray) {
-                    val sender = ConnPacketModule(packet).header.sender
-                    val conStatus = StatusReporterModule.StatusReporterModuleConnectionsMessage(
-                        packet.copyOfRange(ConnPacketModule.SIZEOF_PACKET, packet.size))
+                try {
+                    sendModuleActionTriggerMessageAsync(PrimitiveTypes.NODE_ID_BROADCAST,
+                        ModuleIdWrapper(ModuleId.STATUS_REPORTER_MODULE.id),
+                        StatusReporterModule.StatusModuleTriggerActionMessages.GET_ALL_CONNECTIONS.type,
+                        StatusReporterModule.StatusModuleActionResponseMessages.ALL_CONNECTIONS.type,
+                        clusterSize.value ?: 1) { packet ->
+                        val sender = ConnPacketModule(packet).header.sender
+                        val conStatus = StatusReporterModule.StatusReporterModuleConnectionsMessage(
+                            packet.copyOfRange(ConnPacketModule.SIZEOF_PACKET, packet.size))
 
-                    val addNodeToMesh = fun(_sender: Short, _partner: Short) {
-                        if (_partner != 0.toShort()) meshGraph.addNode(_sender, _partner)
+                        val addNodeToMesh = fun(_sender: Short, _partner: Short) {
+                            if (_partner != 0.toShort()) meshGraph.addNode(_sender, _partner)
+                        }
+                        addNodeToMesh(sender, conStatus.partner1)
+                        addNodeToMesh(sender, conStatus.partner2)
+                        addNodeToMesh(sender, conStatus.partner3)
+                        addNodeToMesh(sender, conStatus.partner4)
                     }
-                    addNodeToMesh(sender, conStatus.partner1)
-                    addNodeToMesh(sender, conStatus.partner2)
-                    addNodeToMesh(sender, conStatus.partner3)
-                    addNodeToMesh(sender, conStatus.partner4)
-                })
-                Log.d("MATAG", "updateMeshGraph: ")
+                    Log.d("MATAG", "updateMeshGraph: ")
+                } catch (e: TimeoutCancellationException) {
+                    failedCallback?.let { it() }
+                }
             }
         }
     }

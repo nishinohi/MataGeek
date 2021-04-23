@@ -113,17 +113,6 @@ class MeshAccessManager(context: Context) :
                     }
                     MessageType.ENCRYPT_CUSTOM_DONE -> {
                         this@MeshAccessManager.handShakeState.postValue(HandShakeState.HANDSHAKE_DONE)
-                        val callback = SuccessCallback {
-                            sendModuleActionTriggerMessage(
-                                ModuleIdWrapper.generateVendorModuleIdWrapper(VendorModuleId.MATAGEEK_MODULE.id,
-                                    1),
-                                MatageekModule.MatageekModuleTriggerActionMessages.STATE.type
-                            )
-                        }
-                        sendModuleActionTriggerMessage(
-                            ModuleIdWrapper(ModuleId.STATUS_REPORTER_MODULE.id),
-                            StatusReporterModule.StatusModuleTriggerActionMessages.GET_STATUS.type,
-                            this.partnerId, null, 0, callback)
                     }
                     MessageType.SPLIT_WRITE_CMD -> {
                         val splitPacket = PacketSplitHeader(packet)

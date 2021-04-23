@@ -1,6 +1,7 @@
 package com.example.matageek.fruity.module
 
 import android.util.Log
+import com.example.matageek.customexception.MessagePacketSizeException
 import com.example.matageek.fruity.types.ConnPacketModule
 import com.example.matageek.fruity.types.MessageType
 import com.example.matageek.fruity.types.ModuleId
@@ -19,9 +20,7 @@ class StatusReporterModule : Module("status", ModuleIdWrapper(ModuleId.STATUS_RE
                 val statusMessage =
                     StatusReporterModuleStatusMessage.readFromBytePacket(packet.copyOfRange(
                         ConnPacketModule.SIZEOF_PACKET, packet.size))
-                        ?: throw Exception("invalid Message")
-                notifyObserver(DeviceInfo(modulePacket.header.sender,
-                    statusMessage.clusterSize, statusMessage.batteryInfo))
+                Log.d("MATAG", "actionResponseMessageReceivedHandler: $statusMessage")
             }
             StatusModuleActionResponseMessages.ALL_CONNECTIONS.type -> {
                 val allConnectionsMessage = StatusReporterModuleConnectionsMessage(
