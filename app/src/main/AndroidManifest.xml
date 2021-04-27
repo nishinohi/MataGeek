@@ -36,6 +36,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ScannerActivity" />
         </activity>
+        <activity
+            android:name=".MeshGraphActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName=".ScannerActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ScannerActivity" />
+        </activity>
     </application>
 
 </manifest>

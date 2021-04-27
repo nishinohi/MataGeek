@@ -77,6 +77,11 @@ class ScannerActivity : AppCompatActivity() {
                 permissionLauncher.launch(it.toTypedArray())
             }
         }
+        bind.debug.setOnClickListener {
+            Intent(this, MeshGraphActivity::class.java).apply {
+                startActivity(this)
+            }
+        }
     }
 
     private fun setRecycleViewAdapter() {
