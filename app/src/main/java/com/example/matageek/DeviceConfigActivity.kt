@@ -149,6 +149,7 @@ class DeviceConfigActivity : AppCompatActivity(),
             }
             MeshAccessManager.HandShakeState.HANDSHAKE_DONE -> {
                 currentViewModel.updateDisplayNodeIdByPartnerId()
+                currentViewModel.displayBleAddr = discoveredDevice.device.address
                 bind.connectingGroup.visibility = View.GONE
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
                 fragmentTransaction.add(R.id.activated_device_fragment,
@@ -173,7 +174,7 @@ class DeviceConfigActivity : AppCompatActivity(),
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment, deviceName: String) {
-        deviceNamePreferences.edit().putString(discoveredDevice.device.address, deviceName).apply()
+        deviceNamePreferences.edit().putString(currentViewModel.displayBleAddr, deviceName).apply()
         currentViewModel.updateDisplayDeviceInfo(DeviceInfo(currentViewModel.displayNodeId,
             null, null, null, deviceName))
     }

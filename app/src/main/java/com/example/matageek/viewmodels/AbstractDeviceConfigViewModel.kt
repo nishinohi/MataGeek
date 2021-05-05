@@ -34,6 +34,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
 
     /** Device Info */
     var displayNodeId: Short = 0
+    var displayBleAddr = ""
     val clusterSize: MutableLiveData<Short> = MutableLiveData()
     val batteryInfo: MutableLiveData<Byte> = MutableLiveData()
     val trapState: MutableLiveData<Boolean> = MutableLiveData()
@@ -145,6 +146,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
                                 "${"%x".format(deviceInfo2Message.gapAddress.addr[1])}:" +
                                 "%x".format(deviceInfo2Message.gapAddress.addr[0])).toUpperCase(
                             Locale.ROOT)
+                        displayBleAddr = bleAddr
                         updateDisplayDeviceInfo(DeviceInfo(
                             targetNodeId, null, null, null,
                             deviceNamePreferences.getString(bleAddr, "Unknown Device")))
