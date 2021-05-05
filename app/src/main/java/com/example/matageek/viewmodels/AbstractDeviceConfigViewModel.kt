@@ -28,7 +28,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
     val progressState: MutableLiveData<Boolean> = MutableLiveData()
 
     /** Device Info */
-    val currentNodeId: MutableLiveData<Short> = MutableLiveData()
+    val displayNodeId: MutableLiveData<Short> = MutableLiveData()
     val clusterSize: MutableLiveData<Short> = MutableLiveData()
     val batteryInfo: MutableLiveData<Byte> = MutableLiveData()
     val trapState: MutableLiveData<Boolean> = MutableLiveData()
@@ -37,6 +37,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
 
     /** Mesh Graph */
     val meshGraph = MeshGraph(meshAccessManager.getPartnerId())
+    val nodeIdList: MutableLiveData<List<Short>> = MutableLiveData()
 
     private lateinit var discoveredDevice: DiscoveredDevice
 
@@ -118,6 +119,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
 
     fun updateDeviceInfo(
         targetNodeId: Short = meshAccessManager.getPartnerId(),
+        successCallback: (() -> Unit)? = null,
         failedCallback: (() -> Unit)? = null, timeoutMillis: Long = 5000,
     ) {
         viewModelScope.launch {
@@ -133,6 +135,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
                                 packet.copyOfRange(ConnPacketModule.SIZEOF_PACKET, packet.size))
                         updateDeviceInfo(DeviceInfo(targetNodeId,
                             statusMessage.clusterSize, statusMessage.batteryInfo))
+                        successCallback?.let { it() }
                     }
                 } catch (e: TimeoutCancellationException) {
                     failedCallback?.let { it() }
@@ -144,8 +147,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
     fun updateMeshGraph(failedCallback: (() -> Unit)? = null, timeoutMillis: Long = 5000) {
         viewModelScope.launch {
             withTimeout(timeoutMillis) {
-                meshGraph.clear()
-                meshGraph.rootNodeId = meshAccessManager.getPartnerId()
+                meshGraph.initialize(meshAccessManager.getPartnerId())
                 try {
                     sendModuleActionTriggerMessageAsync(PrimitiveTypes.NODE_ID_BROADCAST,
                         ModuleIdWrapper(ModuleId.STATUS_REPORTER_MODULE.id),
@@ -164,6 +166,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
                         addNodeToMesh(sender, conStatus.partner3)
                         addNodeToMesh(sender, conStatus.partner4)
                     }
+                    nodeIdList.postValue(meshGraph.nodeIdMap.keys.toList())
                     Log.d("MATAG", "updateMeshGraph: ")
                 } catch (e: TimeoutCancellationException) {
                     failedCallback?.let { it() }
@@ -173,7 +176,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
     }
 
     override fun updateDeviceInfo(deviceInfo: DeviceInfo) {
-        deviceInfo.nodeId?.let { currentNodeId.postValue(it) }
+        deviceInfo.nodeId?.let { displayNodeId.postValue(it) }
         deviceInfo.clusterSize?.let { clusterSize.postValue(it) }
         deviceInfo.batteryInfo?.let { batteryInfo.postValue(it) }
         deviceInfo.trapState?.let { trapState.postValue(it) }
@@ -181,8 +184,8 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
         deviceInfo.deviceName?.let { deviceName.postValue(it) }
     }
 
-    fun updateCurrentNodeIdByPartnerId() {
-        currentNodeId.postValue(meshAccessManager.getPartnerId())
+    fun updateDisplayNodeIdByPartnerId() {
+        displayNodeId.postValue(meshAccessManager.getPartnerId())
     }
 
     companion object {

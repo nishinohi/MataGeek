@@ -40,4 +40,6 @@
     <string name="bluetooth_permission_explain">Matageek requires bluetooth permission</string>
     <string name="gps_denied_permission">GPS PERMISSION DENIED</string>
     <string name="gps_permission_explain">Matageek requires gps permission</string>
+    <string name="connection_info">Connection Info</string>
+    <string name="node_id">Node ID</string>
 </resources>

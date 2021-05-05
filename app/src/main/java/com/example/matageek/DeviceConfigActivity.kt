@@ -9,6 +9,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.activity.viewModels
 import androidx.fragment.app.DialogFragment
 import com.example.matageek.adapter.DiscoveredDevice
@@ -27,7 +29,8 @@ import no.nordicsemi.android.ble.observer.ConnectionObserver
 class DeviceConfigActivity : AppCompatActivity(),
     DeviceActivatedFragment.OnDeviceInfoUpdatedListener,
     DeviceNonActivatedFragment.OnDeviceInfoUpdatedListener,
-    DialogDeviceNameEdit.NoticeDeviceConfigListener {
+    DialogDeviceNameEdit.NoticeDeviceConfigListener,
+    AdapterView.OnItemSelectedListener {
     private lateinit var _bind: ActivityDeviceConfigBinding
     private val bind get() = _bind
     private val deviceActivatedViewModel: DeviceActivatedViewModel by viewModels()
@@ -35,6 +38,7 @@ class DeviceConfigActivity : AppCompatActivity(),
     private lateinit var currentViewModel: AbstractDeviceConfigViewModel
     lateinit var deviceNamePreferences: SharedPreferences
     private lateinit var discoveredDevice: DiscoveredDevice
+    private lateinit var spinnerAdapter: ArrayAdapter<Short>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +55,13 @@ class DeviceConfigActivity : AppCompatActivity(),
         setSupportActionBar(bind.deviceManageToolBar)
         supportActionBar?.title = "Device Manager"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        // set spinner adapter
+        spinnerAdapter =
+            ArrayAdapter<Short>(this, android.R.layout.simple_spinner_item).apply {
+                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            }
+        bind.nodeIdSpinner.adapter = spinnerAdapter
+        bind.nodeIdSpinner.onItemSelectedListener = this
         // connect device
         currentViewModel =
             if (isActivated()) deviceActivatedViewModel else deviceNonActivatedViewModel
@@ -65,6 +76,19 @@ class DeviceConfigActivity : AppCompatActivity(),
         })
         currentViewModel.progressState.observe(this, {
             bind.messageProgress.visibility = if (it) View.VISIBLE else View.INVISIBLE
+        })
+        currentViewModel.displayNodeId.observe(this, {
+            Log.d("MATAG", "onCreate: ")
+        })
+        currentViewModel.nodeIdList.observe(this, {
+            spinnerAdapter.clear()
+            spinnerAdapter.addAll(it.sorted())
+            spinnerAdapter.notifyDataSetChanged()
+            it.sorted().forEachIndexed { index, nodeId ->
+                if (nodeId == currentViewModel.displayNodeId.value) {
+                    bind.nodeIdSpinner.setSelection(index)
+                }
+            }
         })
     }
 
@@ -130,10 +154,10 @@ class DeviceConfigActivity : AppCompatActivity(),
                 fragmentTransaction.add(R.id.activated_device_fragment,
                     if (discoveredDevice.enrolled) DeviceActivatedFragment() else DeviceNonActivatedFragment())
                 fragmentTransaction.commit()
-                currentViewModel.updateCurrentNodeIdByPartnerId()
-                currentViewModel.updateDeviceInfo(currentViewModel.currentNodeId.value ?: 0)
-                currentViewModel.updateMatageekStatus(currentViewModel.currentNodeId.value ?: 0)
-                currentViewModel.updateMeshGraph()
+                currentViewModel.updateDisplayNodeIdByPartnerId()
+                currentViewModel.updateMatageekStatus(currentViewModel.displayNodeId.value ?: 0)
+                currentViewModel.updateDeviceInfo(currentViewModel.displayNodeId.value ?: 0,
+                    { currentViewModel.updateMeshGraph() })
             }
             else -> throw Exception("Unknown Handshake state")
         }
@@ -160,6 +184,14 @@ class DeviceConfigActivity : AppCompatActivity(),
 
     companion object {
         const val EXTRA_DEVICE: String = "com.matageek.EXTRA_DEVICE"
+    }
+
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+//        TODO("Not yet implemented")
+    }
+
+    override fun onNothingSelected(parent: AdapterView<*>?) {
+//        TODO("Not yet implemented")
     }
 
 

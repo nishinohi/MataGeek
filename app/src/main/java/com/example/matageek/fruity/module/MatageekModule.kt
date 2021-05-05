@@ -1,5 +1,6 @@
 package com.example.matageek.fruity.module
 
+import android.util.Log
 import com.example.matageek.customexception.MessagePacketSizeException
 import com.example.matageek.fruity.types.*
 import com.example.matageek.manager.DeviceInfo
@@ -11,15 +12,13 @@ class MatageekModule : Module("matageek", ModuleIdWrapper.generateVendorModuleId
         val vendorModulePacket = ConnPacketVendorModule(packet)
         when (vendorModulePacket.actionType) {
             MatageekModuleActionResponseMessages.STATE_RESPONSE.type -> {
-                val trapStateMessage = MatageekModuleStateMessage(packet.copyOfRange(
-                    ConnPacketVendorModule.SIZEOF_PACKET, packet.size))
-                notifyObserver(DeviceInfo(vendorModulePacket.header.sender,
-                    null, null, trapStateMessage.trapState,
-                    null, MatageekMode.getMode(trapStateMessage.mode)))
+                Log.d("MATAG", "actionResponseMessageReceivedHandler: STATE_RESPONSE")
             }
             MatageekModuleActionResponseMessages.MODE_CHANGE_RESPONSE.type -> {
                 val responseCode = MatageekModuleResponse(packet.copyOfRange(
                     ConnPacketVendorModule.SIZEOF_PACKET, packet.size))
+                Log.d("MATAG",
+                    "actionResponseMessageReceivedHandler: MODE_CHANGE_RESPONSE: $responseCode")
             }
         }
     }
