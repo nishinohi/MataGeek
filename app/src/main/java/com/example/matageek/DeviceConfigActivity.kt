@@ -165,10 +165,9 @@ class DeviceConfigActivity : AppCompatActivity(),
     }
 
     override fun onDeviceInfoFragmentCreated() {
-        deviceNamePreferences.getString(discoveredDevice.device.address, "Unknown Device")?.let {
-            currentViewModel.updateDisplayDeviceInfo(DeviceInfo(currentViewModel.displayNodeId,
-                null, null, null, it))
-        }
+        currentViewModel.updateDisplayDeviceInfo(DeviceInfo(
+            currentViewModel.displayNodeId, null, null, null,
+            deviceNamePreferences.getString(discoveredDevice.device.address, "Unknown Device")))
         currentViewModel.updateMatageekStatus(currentViewModel.displayNodeId)
         currentViewModel.updateDeviceInfo(currentViewModel.displayNodeId)
     }
@@ -191,6 +190,7 @@ class DeviceConfigActivity : AppCompatActivity(),
             currentViewModel.displayNodeId = it
             currentViewModel.updateMatageekStatus(it)
             currentViewModel.updateDeviceInfo(it)
+            currentViewModel.updateDeviceInfo2(it)
         }
     }
 

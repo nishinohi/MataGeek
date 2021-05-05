@@ -1,6 +1,50 @@
 package com.example.matageek.fruity.hal
 
+import com.example.matageek.customexception.MessagePacketSizeException
+import com.example.matageek.fruity.types.ConnectionMessageTypes
+
 class FruityHalBleGap {
+    companion object {
+        const val FH_BLE_GAP_ADDR_LEN: Int = 6
+    }
+}
+
+class BleGapAddr : ConnectionMessageTypes {
+    val bleGapAddrType: BleGapAddrType
+    val addr: ByteArray
+
+    constructor(packet: ByteArray) {
+        if (packet.size < SIZEOF_PACKET) throw MessagePacketSizeException(this::class.java.toString(),
+            SIZEOF_PACKET)
+        getByteBufferWrap(packet).let {
+            bleGapAddrType = BleGapAddrType.getBleGapAddrType(it.get())
+            addr = ByteArray(FruityHalBleGap.FH_BLE_GAP_ADDR_LEN)
+            it.get(addr, 0, FruityHalBleGap.FH_BLE_GAP_ADDR_LEN)
+        }
+    }
+
+    companion object {
+        const val SIZEOF_PACKET = 1 + FruityHalBleGap.FH_BLE_GAP_ADDR_LEN
+    }
+
+    override fun createBytePacket(): ByteArray {
+        TODO("Not yet implemented")
+    }
+}
+
+enum class BleGapAddrType(val type: Byte) {
+    PUBLIC(0x00),
+    RANDOM_STATIC(0x01),
+    RANDOM_PRIVATE_RESOLVABLE(0x02),
+    RANDOM_PRIVATE_NON_RESOLVABLE(0x03),
+    INVALID(0xFF.toByte());
+
+    companion object {
+        fun getBleGapAddrType(type: Byte): BleGapAddrType {
+            return values().find { it.type == type }
+                ?: INVALID
+        }
+    }
 }
 
 enum class BleGapAdType(val type: Byte) {

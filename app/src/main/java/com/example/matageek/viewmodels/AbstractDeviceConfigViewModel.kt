@@ -2,11 +2,14 @@ package com.example.matageek.viewmodels
 
 import android.app.Application
 import android.bluetooth.BluetoothDevice
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.matageek.R
 import com.example.matageek.adapter.DiscoveredDevice
 import com.example.matageek.fruity.module.MatageekModule
 import com.example.matageek.fruity.module.StatusReporterModule
@@ -17,6 +20,7 @@ import com.example.matageek.manager.DeviceInfoObserver
 import com.example.matageek.manager.MeshAccessManager
 import kotlinx.coroutines.*
 import no.nordicsemi.android.ble.livedata.state.ConnectionState
+import java.util.*
 import kotlin.coroutines.resume
 
 abstract class AbstractDeviceConfigViewModel(application: Application) :
@@ -41,6 +45,9 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
     val nodeIdList: MutableLiveData<List<Short>> = MutableLiveData()
 
     private lateinit var discoveredDevice: DiscoveredDevice
+
+    val deviceNamePreferences: SharedPreferences = application.getSharedPreferences(
+        application.getString(R.string.preference_device_name_key), Context.MODE_PRIVATE)
 
     fun connect(discoveredDevice: DiscoveredDevice) {
         this.discoveredDevice = discoveredDevice
@@ -109,6 +116,41 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
                     }
                 } catch (e: TimeoutCancellationException) {
                     failedCallback?.let { it() }
+                }
+            }
+        }
+    }
+
+    fun updateDeviceInfo2(
+        targetNodeId: Short = meshAccessManager.getPartnerId(),
+        successCallback: (() -> Unit)? = null,
+        failedCallback: (() -> Unit)? = null, timeoutMillis: Long = 5000,
+    ) {
+        viewModelScope.launch {
+            withTimeout(timeoutMillis) {
+                try {
+                    sendModuleActionTriggerMessageAsync(targetNodeId,
+                        ModuleIdWrapper(ModuleId.STATUS_REPORTER_MODULE.id),
+                        StatusReporterModule.StatusModuleTriggerActionMessages.GET_DEVICE_INFO_V2.type,
+                        StatusReporterModule.StatusModuleActionResponseMessages.DEVICE_INFO_V2.type,
+                        1) { packet ->
+                        val deviceInfo2Message =
+                            StatusReporterModule.StatusReporterModuleDeviceInfo2Message(packet.copyOfRange(
+                                ConnPacketModule.SIZEOF_PACKET,
+                                packet.size))
+                        val bleAddr = ("${"%x".format(deviceInfo2Message.gapAddress.addr[5])}:" +
+                                "${"%x".format(deviceInfo2Message.gapAddress.addr[4])}:" +
+                                "${"%x".format(deviceInfo2Message.gapAddress.addr[3])}:" +
+                                "${"%x".format(deviceInfo2Message.gapAddress.addr[2])}:" +
+                                "${"%x".format(deviceInfo2Message.gapAddress.addr[1])}:" +
+                                "%x".format(deviceInfo2Message.gapAddress.addr[0])).toUpperCase(
+                            Locale.ROOT)
+                        updateDisplayDeviceInfo(DeviceInfo(
+                            targetNodeId, null, null, null,
+                            deviceNamePreferences.getString(bleAddr, "Unknown Device")))
+                    }
+                } catch (e: TimeoutCancellationException) {
+
                 }
             }
         }

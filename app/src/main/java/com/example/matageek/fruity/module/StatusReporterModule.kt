@@ -2,6 +2,7 @@ package com.example.matageek.fruity.module
 
 import android.util.Log
 import com.example.matageek.customexception.MessagePacketSizeException
+import com.example.matageek.fruity.hal.BleGapAddr
 import com.example.matageek.fruity.types.ConnPacketModule
 import com.example.matageek.fruity.types.MessageType
 import com.example.matageek.fruity.types.ModuleId
@@ -52,6 +53,49 @@ class StatusReporterModule : Module("status", ModuleIdWrapper(ModuleId.STATUS_RE
         }
     }
 
+    class StatusReporterModuleDeviceInfo2Message(packet: ByteArray) {
+        val manufacturerId: Short
+        val serialNumberIndex: Int
+        val chipId: Long
+        val gapAddress: BleGapAddr
+        val networkId: Short
+        val nodeVersion: Int
+        val dbmRx: Byte
+        val dbmTx: Byte
+        val deviceType: Byte
+        val calibratedTx: Byte
+        val chipGroupId: Short
+        val featuresetGroupId: Short
+        val bootloaderVersion: Short
+
+        init {
+            if (packet.size < SIZE_OF_PACKET) throw MessagePacketSizeException(this::class.java.toString(),
+                SIZE_OF_PACKET)
+            ByteBuffer.wrap(packet).order(ByteOrder.LITTLE_ENDIAN).apply {
+                manufacturerId = short
+                serialNumberIndex = int
+                chipId = long
+                val temp: ByteArray = ByteArray(BleGapAddr.SIZEOF_PACKET)
+                get(temp, 0, BleGapAddr.SIZEOF_PACKET)
+                gapAddress = BleGapAddr(temp)
+                networkId = short
+                nodeVersion = int
+                dbmRx = get()
+                dbmTx = get()
+                deviceType = get()
+                calibratedTx = get()
+                chipGroupId = short
+                featuresetGroupId = short
+                bootloaderVersion = short
+            }
+        }
+
+        companion object {
+            const val SIZE_OF_PACKET = 30 + BleGapAddr.SIZEOF_PACKET
+        }
+    }
+
+
     class StatusReporterModuleConnectionsMessage(packet: ByteArray) {
         val partner1: Short
         val rssi1: Byte
@@ -67,7 +111,8 @@ class StatusReporterModule : Module("status", ModuleIdWrapper(ModuleId.STATUS_RE
         }
 
         init {
-            if (packet.size < SIZE_OF_PACKET) throw Exception("invalid packet")
+            if (packet.size < SIZE_OF_PACKET) throw MessagePacketSizeException(this::class.java.toString(),
+                SIZE_OF_PACKET)
             val byteBuffer = ByteBuffer.wrap(packet).order(ByteOrder.LITTLE_ENDIAN)
             partner1 = byteBuffer.short
             rssi1 = byteBuffer.get()
