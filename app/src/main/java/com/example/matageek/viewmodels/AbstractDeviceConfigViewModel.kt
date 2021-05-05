@@ -21,7 +21,7 @@ import kotlin.coroutines.resume
 
 abstract class AbstractDeviceConfigViewModel(application: Application) :
     AndroidViewModel(application), DeviceInfoObserver {
-    protected val meshAccessManager: MeshAccessManager = MeshAccessManager(application)
+    protected val meshAccessManager: MeshAccessManager = MeshAccessManager(application, this)
 
     /** Device Connection State */
     val connectionState: LiveData<ConnectionState> = meshAccessManager.state
@@ -41,10 +41,6 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
     val nodeIdList: MutableLiveData<List<Short>> = MutableLiveData()
 
     private lateinit var discoveredDevice: DiscoveredDevice
-
-    fun addDeviceInfoObserver() {
-        meshAccessManager.addDeviceInfoObserver(this)
-    }
 
     fun connect(discoveredDevice: DiscoveredDevice) {
         this.discoveredDevice = discoveredDevice
@@ -135,7 +131,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
                             StatusReporterModule.StatusReporterModuleStatusMessage.readFromBytePacket(
                                 packet.copyOfRange(ConnPacketModule.SIZEOF_PACKET, packet.size))
                         updateDisplayDeviceInfo(DeviceInfo(targetNodeId,
-                            statusMessage.clusterSize, statusMessage.batteryInfo))
+                            null, statusMessage.batteryInfo))
                         successCallback?.let { it() }
                     }
                 } catch (e: TimeoutCancellationException) {

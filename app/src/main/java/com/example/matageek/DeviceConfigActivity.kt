@@ -64,7 +64,6 @@ class DeviceConfigActivity : AppCompatActivity(),
         // connect device
         currentViewModel =
             if (isActivated()) deviceActivatedViewModel else deviceNonActivatedViewModel
-        currentViewModel.addDeviceInfoObserver()
         currentViewModel.connect(discoveredDevice)
         // set observer
         currentViewModel.connectionState.observe(this, {

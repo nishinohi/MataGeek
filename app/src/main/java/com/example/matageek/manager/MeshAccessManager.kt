@@ -26,7 +26,7 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import kotlin.Exception
 
-class MeshAccessManager(context: Context) :
+class MeshAccessManager(context: Context, private val observer: DeviceInfoObserver) :
     ObservableBleManager(context) {
 
     /** MeshAccessService Characteristics */
@@ -36,6 +36,10 @@ class MeshAccessManager(context: Context) :
 
     // ble timeout handler map
     val timeoutMap: MutableMap<Long, TimeOutCoroutineJobAndCounter<Boolean>> = mutableMapOf()
+
+    fun notifyObserver(commonDeviceInfo: CommonDeviceInfo) {
+        observer.updateCommonDeviceInfo(commonDeviceInfo)
+    }
 
     data class TimeOutCoroutineJobAndCounter<T>(
         var counter: Short,
@@ -73,10 +77,6 @@ class MeshAccessManager(context: Context) :
         modules.add(StatusReporterModule())
         modules.add(EnrollmentModule())
         modules.add(MatageekModule())
-    }
-
-    fun addDeviceInfoObserver(deviceInfoObserver: DeviceInfoObserver) {
-        modules.forEach { it.addObserver(deviceInfoObserver) }
     }
 
     override fun getGattCallback(): BleManagerGattCallback {
@@ -131,7 +131,7 @@ class MeshAccessManager(context: Context) :
                     MessageType.CLUSTER_INFO_UPDATE -> {
                         val clusterInfoUpdate = ConnPacketClusterInfoUpdate(packet)
                         // It can use any module to update device info
-                        modules[0].notifyObserver(CommonDeviceInfo(
+                        notifyObserver(CommonDeviceInfo(
                             clusterInfoUpdate.clusterSizeChange))
                     }
                     else -> {

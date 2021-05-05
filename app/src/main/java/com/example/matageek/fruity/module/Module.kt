@@ -15,22 +15,6 @@ abstract class Module(
     protected val moduleName: String,
     val moduleIdWrapper: ModuleIdWrapper,
 ) {
-    private val observers: MutableList<DeviceInfoObserver> = mutableListOf()
-
-    fun addObserver(observer: DeviceInfoObserver) {
-        observers.add(observer)
-    }
-
-    fun deleteObserver(observer: DeviceInfoObserver) {
-        observers.remove(observer)
-    }
-
-    fun notifyObserver(commonDeviceInfo: CommonDeviceInfo) {
-        observers.forEach {
-            it.updateCommonDeviceInfo(commonDeviceInfo)
-        }
-    }
-
     //TODO: reliable is currently not supported and by default false. The input is ignored
     protected fun createSendModuleActionMessagePacket(
         messageType: MessageType, receiver: Short, requestHandle: Byte, actionType: Byte,
