@@ -29,7 +29,7 @@
     <string name="connecting">Connecting…</string>
     <string name="device_info">Device Info</string>
     <string name="matageek_mode">Mode</string>
-    <string name="mesh_info">Mesh Info</string>
+    <string name="mode_info">Mode Info</string>
     <string name="bluetooth_disabled">BLUETOOTH DISABLED</string>
     <string name="bluetooth_require_explain">Matageek requires bluetooth function</string>
     <string name="bluetooth_enable">Enable</string>

@@ -20,7 +20,7 @@ class DeviceNonActivatedFragment : Fragment() {
     private lateinit var _bind: FragmentDeviceNonActivatedBinding
     private val bind get() = _bind
     private val deviceNonActivatedViewModel: DeviceNonActivatedViewModel by activityViewModels()
-    var listener: DeviceActivatedFragment.OnDeviceInfoUpdatedListener? = null
+    var listener: DeviceActivatedFragment.OnDeviceInfoFragmentCreatedListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,9 +33,6 @@ class DeviceNonActivatedFragment : Fragment() {
         })
         deviceNonActivatedViewModel.batteryInfo.observe(viewLifecycleOwner, {
             bind.activatedBattery.text = "$it%"
-        })
-        deviceNonActivatedViewModel.clusterSize.observe(viewLifecycleOwner, {
-            bind.activatedClusterSize.text = it.toString()
         })
         // button handler
         bind.activateButton.setOnClickListener {
@@ -57,19 +54,15 @@ class DeviceNonActivatedFragment : Fragment() {
             DialogDeviceNameEdit().show(childFragmentManager, "test")
         }
 
-        listener?.onDeviceInfoUpdated()
+        listener?.onDeviceInfoFragmentCreated()
 
         return bind.root
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        listener = context as? DeviceActivatedFragment.OnDeviceInfoUpdatedListener
+        listener = context as? DeviceActivatedFragment.OnDeviceInfoFragmentCreatedListener
         if (listener == null) throw ClassCastException("$context must implement OnDeviceInfoUpdatedListener")
-    }
-
-    interface OnDeviceInfoUpdatedListener {
-        fun onDeviceInfoUpdated()
     }
 
 }

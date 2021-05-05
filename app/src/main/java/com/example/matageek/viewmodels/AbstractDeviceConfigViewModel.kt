@@ -11,6 +11,7 @@ import com.example.matageek.adapter.DiscoveredDevice
 import com.example.matageek.fruity.module.MatageekModule
 import com.example.matageek.fruity.module.StatusReporterModule
 import com.example.matageek.fruity.types.*
+import com.example.matageek.manager.CommonDeviceInfo
 import com.example.matageek.manager.DeviceInfo
 import com.example.matageek.manager.DeviceInfoObserver
 import com.example.matageek.manager.MeshAccessManager
@@ -28,7 +29,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
     val progressState: MutableLiveData<Boolean> = MutableLiveData()
 
     /** Device Info */
-    val displayNodeId: MutableLiveData<Short> = MutableLiveData()
+    var displayNodeId: Short = 0
     val clusterSize: MutableLiveData<Short> = MutableLiveData()
     val batteryInfo: MutableLiveData<Byte> = MutableLiveData()
     val trapState: MutableLiveData<Boolean> = MutableLiveData()
@@ -106,7 +107,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
                         val trapStateMessage =
                             MatageekModule.MatageekModuleStateMessage(packet.copyOfRange(
                                 ConnPacketVendorModule.SIZEOF_PACKET, packet.size))
-                        updateDeviceInfo(DeviceInfo(targetNodeId,
+                        updateDisplayDeviceInfo(DeviceInfo(targetNodeId,
                             null, null, trapStateMessage.trapState,
                             null, MatageekModule.MatageekMode.getMode(trapStateMessage.mode)))
                     }
@@ -133,7 +134,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
                         val statusMessage =
                             StatusReporterModule.StatusReporterModuleStatusMessage.readFromBytePacket(
                                 packet.copyOfRange(ConnPacketModule.SIZEOF_PACKET, packet.size))
-                        updateDeviceInfo(DeviceInfo(targetNodeId,
+                        updateDisplayDeviceInfo(DeviceInfo(targetNodeId,
                             statusMessage.clusterSize, statusMessage.batteryInfo))
                         successCallback?.let { it() }
                     }
@@ -175,8 +176,8 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
         }
     }
 
-    override fun updateDeviceInfo(deviceInfo: DeviceInfo) {
-        deviceInfo.nodeId?.let { displayNodeId.postValue(it) }
+    override fun updateDisplayDeviceInfo(deviceInfo: DeviceInfo) {
+        if (deviceInfo.nodeId != displayNodeId) return
         deviceInfo.clusterSize?.let { clusterSize.postValue(it) }
         deviceInfo.batteryInfo?.let { batteryInfo.postValue(it) }
         deviceInfo.trapState?.let { trapState.postValue(it) }
@@ -184,8 +185,13 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
         deviceInfo.deviceName?.let { deviceName.postValue(it) }
     }
 
+    override fun updateCommonDeviceInfo(commonDeviceInfo: CommonDeviceInfo) {
+        commonDeviceInfo.clusterSize?.let { clusterSize.postValue(it) }
+        commonDeviceInfo.matageekMode?.let { modeState.postValue(it) }
+    }
+
     fun updateDisplayNodeIdByPartnerId() {
-        displayNodeId.postValue(meshAccessManager.getPartnerId())
+        displayNodeId = meshAccessManager.getPartnerId()
     }
 
     companion object {

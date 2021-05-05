@@ -27,8 +27,7 @@ import no.nordicsemi.android.ble.livedata.state.ConnectionState
 import no.nordicsemi.android.ble.observer.ConnectionObserver
 
 class DeviceConfigActivity : AppCompatActivity(),
-    DeviceActivatedFragment.OnDeviceInfoUpdatedListener,
-    DeviceNonActivatedFragment.OnDeviceInfoUpdatedListener,
+    DeviceActivatedFragment.OnDeviceInfoFragmentCreatedListener,
     DialogDeviceNameEdit.NoticeDeviceConfigListener,
     AdapterView.OnItemSelectedListener {
     private lateinit var _bind: ActivityDeviceConfigBinding
@@ -77,15 +76,16 @@ class DeviceConfigActivity : AppCompatActivity(),
         currentViewModel.progressState.observe(this, {
             bind.messageProgress.visibility = if (it) View.VISIBLE else View.INVISIBLE
         })
-        currentViewModel.displayNodeId.observe(this, {
-            Log.d("MATAG", "onCreate: ")
+        currentViewModel.clusterSize.observe(this, {
+            bind.activatedClusterSize.text = it.toString()
+            currentViewModel.updateMeshGraph()
         })
         currentViewModel.nodeIdList.observe(this, {
             spinnerAdapter.clear()
             spinnerAdapter.addAll(it.sorted())
             spinnerAdapter.notifyDataSetChanged()
             it.sorted().forEachIndexed { index, nodeId ->
-                if (nodeId == currentViewModel.displayNodeId.value) {
+                if (nodeId == currentViewModel.displayNodeId) {
                     bind.nodeIdSpinner.setSelection(index)
                 }
             }
@@ -149,15 +149,12 @@ class DeviceConfigActivity : AppCompatActivity(),
                 Log.d("MATAG", "onCreate: CONNECTING")
             }
             MeshAccessManager.HandShakeState.HANDSHAKE_DONE -> {
+                currentViewModel.updateDisplayNodeIdByPartnerId()
                 bind.connectingGroup.visibility = View.GONE
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
                 fragmentTransaction.add(R.id.activated_device_fragment,
                     if (discoveredDevice.enrolled) DeviceActivatedFragment() else DeviceNonActivatedFragment())
                 fragmentTransaction.commit()
-                currentViewModel.updateDisplayNodeIdByPartnerId()
-                currentViewModel.updateMatageekStatus(currentViewModel.displayNodeId.value ?: 0)
-                currentViewModel.updateDeviceInfo(currentViewModel.displayNodeId.value ?: 0,
-                    { currentViewModel.updateMeshGraph() })
             }
             else -> throw Exception("Unknown Handshake state")
         }
@@ -168,15 +165,19 @@ class DeviceConfigActivity : AppCompatActivity(),
         bind.connectingText.setText(stringId)
     }
 
-    override fun onDeviceInfoUpdated() {
+    override fun onDeviceInfoFragmentCreated() {
         deviceNamePreferences.getString(discoveredDevice.device.address, "Unknown Device")?.let {
-            currentViewModel.updateDeviceInfo(DeviceInfo(null, null, null, null, it))
+            currentViewModel.updateDisplayDeviceInfo(DeviceInfo(currentViewModel.displayNodeId,
+                null, null, null, it))
         }
+        currentViewModel.updateMatageekStatus(currentViewModel.displayNodeId)
+        currentViewModel.updateDeviceInfo(currentViewModel.displayNodeId)
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment, deviceName: String) {
         deviceNamePreferences.edit().putString(discoveredDevice.device.address, deviceName).apply()
-        currentViewModel.updateDeviceInfo(DeviceInfo(null, null, null, null, deviceName))
+        currentViewModel.updateDisplayDeviceInfo(DeviceInfo(currentViewModel.displayNodeId,
+            null, null, null, deviceName))
     }
 
     override fun onDialogNegativeClick(dialog: DialogFragment) {
@@ -187,7 +188,11 @@ class DeviceConfigActivity : AppCompatActivity(),
     }
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-//        TODO("Not yet implemented")
+        spinnerAdapter.getItem(position)?.let {
+            currentViewModel.displayNodeId = it
+            currentViewModel.updateMatageekStatus(it)
+            currentViewModel.updateDeviceInfo(it)
+        }
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {

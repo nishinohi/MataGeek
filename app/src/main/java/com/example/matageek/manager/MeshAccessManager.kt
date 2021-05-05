@@ -131,9 +131,8 @@ class MeshAccessManager(context: Context) :
                     MessageType.CLUSTER_INFO_UPDATE -> {
                         val clusterInfoUpdate = ConnPacketClusterInfoUpdate(packet)
                         // It can use any module to update device info
-                        modules[0].notifyObserver(DeviceInfo(null,
-                            clusterInfoUpdate.clusterSizeChange,
-                            null))
+                        modules[0].notifyObserver(CommonDeviceInfo(
+                            clusterInfoUpdate.clusterSizeChange))
                     }
                     else -> {
                         Log.d("MATAG", "onDataReceived: Unknown Message $messageType")

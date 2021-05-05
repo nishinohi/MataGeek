@@ -4,6 +4,7 @@ import com.example.matageek.fruity.types.ConnPacketModule
 import com.example.matageek.fruity.types.ConnPacketVendorModule
 import com.example.matageek.fruity.types.MessageType
 import com.example.matageek.fruity.types.ModuleIdWrapper
+import com.example.matageek.manager.CommonDeviceInfo
 import com.example.matageek.manager.DeviceInfo
 import com.example.matageek.manager.MeshAccessManager
 import com.example.matageek.manager.DeviceInfoObserver
@@ -24,9 +25,9 @@ abstract class Module(
         observers.remove(observer)
     }
 
-    fun notifyObserver(deviceInfo: DeviceInfo) {
+    fun notifyObserver(commonDeviceInfo: CommonDeviceInfo) {
         observers.forEach {
-            it.updateDeviceInfo(deviceInfo)
+            it.updateCommonDeviceInfo(commonDeviceInfo)
         }
     }
 
