@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import com.example.matageek.adapter.DevicesAdapter
+import com.example.matageek.adapter.DiscoveredDevice
 import com.example.matageek.databinding.ActivityScannerBinding
 import com.example.matageek.viewmodels.ScannerViewModel
 
@@ -81,12 +82,13 @@ class ScannerActivity : AppCompatActivity() {
 
     private fun setRecycleViewAdapter() {
         // set recycle adapter
-        val adapter = DevicesAdapter {
+        val adapter = DevicesAdapter(fun(view: View, dis: DiscoveredDevice) {
             Intent(this, DeviceConfigActivity::class.java).apply {
-                putExtra(DeviceConfigActivity.EXTRA_DEVICE, it)
+                putExtra(DeviceConfigActivity.EXTRA_DEVICE, dis)
                 startActivity(this)
             }
-        }
+
+        })
         bind.scannedDeviceList.adapter = adapter
         scannerViewModel.devicesLiveData.observe(this) {
             it?.let {

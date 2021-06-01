@@ -12,7 +12,7 @@ import com.example.matageek.R
 import com.example.matageek.databinding.DeviceItemBinding
 import com.example.matageek.databinding.DeviceItemBinding.*
 
-class DevicesAdapter(private val onItemClick: (DiscoveredDevice) -> Unit) :
+class DevicesAdapter(private val onItemClick: (View, DiscoveredDevice) -> Unit) :
     ListAdapter<DiscoveredDevice, DevicesAdapter.DeviceViewHolder>(DiscoveredDeviceDiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DeviceViewHolder {
@@ -53,7 +53,7 @@ class DevicesAdapter(private val onItemClick: (DiscoveredDevice) -> Unit) :
         }
     }
 
-    class DeviceViewHolder(itemView: View, val onItemClick: (DiscoveredDevice) -> Unit) :
+    class DeviceViewHolder(itemView: View, val onItemClick: (View, DiscoveredDevice) -> Unit) :
         RecyclerView.ViewHolder(itemView) {
         private var _binding: DeviceItemBinding = bind(itemView)
         val binding get() = _binding
@@ -62,7 +62,7 @@ class DevicesAdapter(private val onItemClick: (DiscoveredDevice) -> Unit) :
         init {
             binding.deviceContainer.setOnClickListener {
                 currentDiscoveredDevice?.let {
-                    onItemClick(it)
+                    onItemClick(itemView, it)
                 }
             }
         }

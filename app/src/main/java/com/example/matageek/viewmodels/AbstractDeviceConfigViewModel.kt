@@ -175,7 +175,7 @@ abstract class AbstractDeviceConfigViewModel(application: Application) :
                             StatusReporterModule.StatusReporterModuleStatusMessage.readFromBytePacket(
                                 packet.copyOfRange(ConnPacketModule.SIZEOF_PACKET, packet.size))
                         updateDisplayDeviceInfo(DeviceInfo(targetNodeId,
-                            null, statusMessage.batteryInfo))
+                            statusMessage.clusterSize, statusMessage.batteryInfo))
                         successCallback?.let { it() }
                     }
                 } catch (e: TimeoutCancellationException) {

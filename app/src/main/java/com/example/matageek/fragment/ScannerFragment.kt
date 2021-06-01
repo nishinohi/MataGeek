@@ -20,6 +20,7 @@ import androidx.navigation.findNavController
 import com.example.matageek.DeviceConfigActivity
 import com.example.matageek.R
 import com.example.matageek.adapter.DevicesAdapter
+import com.example.matageek.adapter.DiscoveredDevice
 import com.example.matageek.databinding.ActivityScannerBinding
 import com.example.matageek.databinding.FragmentScannerBinding
 import com.example.matageek.viewmodels.ScannerViewModel
@@ -92,9 +93,11 @@ class ScannerFragment : Fragment() {
 
     private fun setRecycleViewAdapter() {
         // set recycle adapter
-        val adapter = DevicesAdapter {
-            scannerViewModel.selectedDevice = it
-        }
+        val adapter = DevicesAdapter(fun(itemView: View, discoveredDevice: DiscoveredDevice) {
+            scannerViewModel.selectedDevice = discoveredDevice
+            val action = ScannerFragmentDirections.actionScannerFragmentToDeviceInfoFragment()
+            itemView.findNavController().navigate(action)
+        })
         bind.scannedDeviceList.adapter = adapter
         scannerViewModel.devicesLiveData.observe(viewLifecycleOwner) {
             it?.let {

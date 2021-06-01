@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    tools:context=".DeviceConfigActivity">
+    tools:context=".fragment.DeviceInfoFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -66,6 +66,37 @@
             app:layout_constraintTop_toTopOf="@+id/node_id_title" />
 
         <TextView
+            android:id="@+id/activated_device_name_title"
+            style="@style/device_config_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/device_name"
+            app:layout_constraintStart_toStartOf="@+id/connection_title"
+            app:layout_constraintTop_toBottomOf="@+id/node_id_title" />
+
+        <TextView
+            android:id="@+id/activated_device_name"
+            style="@style/device_config_param_small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="@+id/activated_device_name_title"
+            app:layout_constraintTop_toBottomOf="@+id/activated_device_name_title"
+            tools:text="unknown" />
+
+        <ImageView
+            android:id="@+id/ic_activated_device_name_edit"
+            style="@style/device_name_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="72dp"
+            android:src="@drawable/ic_text_edit"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/activated_device_name_title" />
+
+        <TextView
             android:id="@+id/activated_cluster_size_title"
             style="@style/device_config_title"
             android:layout_width="wrap_content"
@@ -74,7 +105,7 @@
             android:text="@string/cluster_size"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             app:layout_constraintStart_toStartOf="@+id/node_id_title"
-            app:layout_constraintTop_toBottomOf="@+id/node_id_title" />
+            app:layout_constraintTop_toBottomOf="@+id/activated_device_name" />
 
         <TextView
             android:id="@+id/activated_cluster_size"
@@ -122,7 +153,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            app:constraint_referenced_ids="device_content_fragment,node_id_title,connection_title,node_id_spinner,activated_cluster_size_title,activated_cluster_size"
+            app:constraint_referenced_ids="device_content_fragment,node_id_title,connection_title,node_id_spinner,activated_cluster_size_title,activated_cluster_size,activated_device_name,activated_device_name_title,ic_activated_device_name_edit"
             tools:visibility="visible" />
 
         <androidx.constraintlayout.widget.Group

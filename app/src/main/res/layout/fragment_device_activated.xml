@@ -57,12 +57,12 @@
         app:layout_constraintTop_toBottomOf="@+id/mode_change_button" />
 
     <TextView
-        android:id="@+id/activated_device_info"
+        android:id="@+id/activated_device_status"
         style="@style/device_config_info_section"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="@string/device_info"
+        android:text="@string/device_status"
         app:layout_constraintStart_toStartOf="@+id/matageek_mode_title"
         app:layout_constraintTop_toBottomOf="@+id/mesh_device_info_divider" />
 
@@ -73,8 +73,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="@string/device_name"
-        app:layout_constraintStart_toStartOf="@+id/activated_device_info"
-        app:layout_constraintTop_toBottomOf="@+id/activated_device_info" />
+        app:layout_constraintStart_toStartOf="@+id/activated_device_status"
+        app:layout_constraintTop_toBottomOf="@+id/activated_device_status" />
 
     <TextView
         android:id="@+id/activated_device_name"
@@ -104,7 +104,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/trap_state"
-        app:layout_constraintStart_toStartOf="@+id/activated_device_info"
+        app:layout_constraintStart_toStartOf="@+id/activated_device_status"
         app:layout_constraintTop_toBottomOf="@+id/activated_device_name" />
 
     <TextView
@@ -136,7 +136,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/battery"
-        app:layout_constraintStart_toStartOf="@+id/activated_device_info"
+        app:layout_constraintStart_toStartOf="@+id/activated_device_status"
         app:layout_constraintTop_toBottomOf="@+id/activated_trap_state" />
 
     <TextView

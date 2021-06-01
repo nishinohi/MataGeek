@@ -38,7 +38,7 @@ class DialogDeviceNameEdit : DialogFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         try {
-            listener = context as NoticeDeviceConfigListener
+            listener = requireParentFragment() as NoticeDeviceConfigListener
         } catch (e: ClassCastException) {
             throw ClassCastException("$context must implement NoticeDialogListener")
         }

@@ -11,15 +11,16 @@
         android:label="fragment_scanner"
         tools:layout="@layout/fragment_scanner" >
         <action
-            android:id="@+id/action_scannerFragment_to_deviceNonActivatedFragment"
-            app:destination="@id/deviceNonActivatedFragment" />
+            android:id="@+id/action_scannerFragment_to_deviceInfoFragment"
+            app:destination="@id/deviceInfoFragment" />
     </fragment>
     <fragment
-        android:id="@+id/deviceNonActivatedFragment"
-        android:name="com.example.matageek.fragment.DeviceNonActivatedFragment"
-        android:label="DeviceNonActivatedFragment" />
-    <fragment
-        android:id="@+id/deviceActivatedFragment"
-        android:name="com.example.matageek.fragment.DeviceActivatedFragment"
-        android:label="DeviceActivatedFragment" />
+        android:id="@+id/deviceInfoFragment"
+        android:name="com.example.matageek.fragment.DeviceInfoFragment"
+        android:label="fragment_device_info"
+        tools:layout="@layout/fragment_device_info" >
+        <action
+            android:id="@+id/action_deviceInfoFragment_to_scannerFragment"
+            app:destination="@id/scannerFragment" />
+    </fragment>
 </navigation>

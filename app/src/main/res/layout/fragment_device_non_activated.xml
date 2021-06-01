@@ -27,56 +27,25 @@
         app:layout_constraintTop_toBottomOf="@+id/activate_button" />
 
     <TextView
-        android:id="@+id/activated_device_info"
+        android:id="@+id/activated_device_status"
         style="@style/device_config_info_section"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="12dp"
-        android:text="@string/device_info"
+        android:text="@string/device_status"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mesh_device_info_divider" />
-
-    <TextView
-        android:id="@+id/activated_device_name_title"
-        style="@style/device_config_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="@string/device_name"
-        app:layout_constraintStart_toStartOf="@+id/activated_device_info"
-        app:layout_constraintTop_toBottomOf="@+id/activated_device_info" />
-
-    <TextView
-        android:id="@+id/activated_device_name"
-        style="@style/device_config_param_small"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintStart_toStartOf="@+id/activated_device_name_title"
-        app:layout_constraintTop_toBottomOf="@+id/activated_device_name_title"
-        tools:text="unknown" />
-
-    <ImageView
-        android:id="@+id/ic_activated_device_name_edit"
-        style="@style/device_name_edit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="72dp"
-        android:src="@drawable/ic_text_edit"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/activated_device_name_title" />
 
     <TextView
         android:id="@+id/activated_battery_title"
         style="@style/device_config_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:text="@string/battery"
-        app:layout_constraintStart_toStartOf="@+id/activated_device_info"
-        app:layout_constraintTop_toBottomOf="@+id/activated_device_name" />
+        app:layout_constraintStart_toStartOf="@+id/activated_device_status"
+        app:layout_constraintTop_toBottomOf="@+id/activated_device_status" />
 
     <TextView
         android:id="@+id/activated_battery"

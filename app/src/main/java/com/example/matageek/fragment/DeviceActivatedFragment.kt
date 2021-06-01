@@ -19,7 +19,6 @@ class DeviceActivatedFragment : Fragment() {
     private lateinit var _bind: FragmentDeviceActivatedBinding
     private val bind get() = _bind
     private val deviceActivatedViewModel: DeviceActivatedViewModel by activityViewModels()
-    var listener: OnDeviceInfoFragmentCreatedListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,19 +60,8 @@ class DeviceActivatedFragment : Fragment() {
                 }
             }
         }
-        listener?.onDeviceInfoFragmentCreated()
 
         return bind.root
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        listener = context as? OnDeviceInfoFragmentCreatedListener
-        if (listener == null) throw ClassCastException("$context must implement OnDeviceInfoUpdatedListener")
-    }
-
-    interface OnDeviceInfoFragmentCreatedListener {
-        fun onDeviceInfoFragmentCreated()
     }
 
 }

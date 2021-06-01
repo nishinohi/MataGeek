@@ -1,84 +1,92 @@
-package com.example.matageek
+package com.example.matageek.fragment
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
-import android.content.res.Resources
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.activity.viewModels
 import androidx.fragment.app.DialogFragment
-import com.example.matageek.adapter.DiscoveredDevice
-import com.example.matageek.databinding.ActivityDeviceConfigBinding
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.findNavController
+import com.example.matageek.R
+import com.example.matageek.databinding.FragmentDeviceInfoBinding
 import com.example.matageek.dialog.DialogDeviceNameEdit
-import com.example.matageek.fragment.DeviceActivatedFragment
-import com.example.matageek.fragment.DeviceNonActivatedFragment
 import com.example.matageek.manager.DeviceInfo
 import com.example.matageek.manager.MeshAccessManager
 import com.example.matageek.viewmodels.AbstractDeviceConfigViewModel
 import com.example.matageek.viewmodels.DeviceActivatedViewModel
 import com.example.matageek.viewmodels.DeviceNonActivatedViewModel
+import com.example.matageek.viewmodels.ScannerViewModel
 import no.nordicsemi.android.ble.livedata.state.ConnectionState
 import no.nordicsemi.android.ble.observer.ConnectionObserver
 
-class DeviceConfigActivity : AppCompatActivity(),
+class DeviceInfoFragment : Fragment(),
     DialogDeviceNameEdit.NoticeDeviceConfigListener,
     AdapterView.OnItemSelectedListener {
-    private lateinit var _bind: ActivityDeviceConfigBinding
+
+    private lateinit var _bind: FragmentDeviceInfoBinding
     private val bind get() = _bind
-    private val deviceActivatedViewModel: DeviceActivatedViewModel by viewModels()
-    private val deviceNonActivatedViewModel: DeviceNonActivatedViewModel by viewModels()
+    private val deviceActivatedViewModel: DeviceActivatedViewModel by activityViewModels()
+    private val deviceNonActivatedViewModel: DeviceNonActivatedViewModel by activityViewModels()
+    private val scannerViewModel: ScannerViewModel by activityViewModels()
     private lateinit var currentViewModel: AbstractDeviceConfigViewModel
     lateinit var deviceNamePreferences: SharedPreferences
-    private lateinit var discoveredDevice: DiscoveredDevice
     private lateinit var spinnerAdapter: ArrayAdapter<Short>
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        _bind = ActivityDeviceConfigBinding.inflate(layoutInflater)
-        setContentView(bind.root)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        _bind = FragmentDeviceInfoBinding.inflate(inflater, container, false)
         // load setting
-        deviceNamePreferences = getSharedPreferences(getString(R.string.preference_device_name_key),
-            Context.MODE_PRIVATE)
-        // get bundle
-        discoveredDevice =
-            intent.getParcelableExtra(AbstractDeviceConfigViewModel.EXTRA_DEVICE)
-                ?: throw Resources.NotFoundException("device")
+        deviceNamePreferences =
+            requireContext().getSharedPreferences(getString(R.string.preference_device_name_key),
+                Context.MODE_PRIVATE)
         // action bar enable back press
-        setSupportActionBar(bind.deviceManageToolBar)
-        supportActionBar?.title = "Device Manager"
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+//        setSupportActionBar(bind.deviceManageToolBar)
+//        supportActionBar?.title = "Device Manager"
+//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         // set spinner adapter
         spinnerAdapter =
-            ArrayAdapter<Short>(this, android.R.layout.simple_spinner_item).apply {
+            ArrayAdapter<Short>(requireContext(), android.R.layout.simple_spinner_item).apply {
                 setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }
         bind.nodeIdSpinner.adapter = spinnerAdapter
         bind.nodeIdSpinner.onItemSelectedListener = this
+        // transaction
+        val fragmentTransaction =
+            requireActivity().supportFragmentManager.beginTransaction()
+        fragmentTransaction.add(R.id.device_content_fragment,
+            if (scannerViewModel.selectedDevice.enrolled) DeviceActivatedFragment() else DeviceNonActivatedFragment())
+        fragmentTransaction.commit()
         // connect device
         currentViewModel =
             if (isActivated()) deviceActivatedViewModel else deviceNonActivatedViewModel
-        currentViewModel.connect(discoveredDevice)
+        currentViewModel.connect(scannerViewModel.selectedDevice)
         // set observer
-        currentViewModel.connectionState.observe(this, {
+        currentViewModel.deviceName.observe(viewLifecycleOwner, {
+            bind.activatedDeviceName.text = it
+        })
+        currentViewModel.connectionState.observe(viewLifecycleOwner, {
             onConnectionUpdated(it)
         })
-        currentViewModel.handShakeState.observe(this, {
+        currentViewModel.handShakeState.observe(viewLifecycleOwner, {
             onHandShakeUpdated(it)
         })
-        currentViewModel.progressState.observe(this, {
+        currentViewModel.progressState.observe(viewLifecycleOwner, {
             bind.messageProgress.visibility = if (it) View.VISIBLE else View.INVISIBLE
         })
-        currentViewModel.clusterSize.observe(this, {
+        currentViewModel.clusterSize.observe(viewLifecycleOwner, {
             bind.activatedClusterSize.text = it.toString()
             currentViewModel.updateMeshGraph()
         })
-        currentViewModel.nodeIdList.observe(this, {
+        currentViewModel.nodeIdList.observe(viewLifecycleOwner, {
             spinnerAdapter.clear()
             spinnerAdapter.addAll(it.sorted())
             spinnerAdapter.notifyDataSetChanged()
@@ -88,16 +96,21 @@ class DeviceConfigActivity : AppCompatActivity(),
                 }
             }
         })
+        bind.icActivatedDeviceNameEdit.setOnClickListener {
+            DialogDeviceNameEdit().show(childFragmentManager, "test")
+        }
+        return bind.root
     }
+
 
     private fun isActivated(): Boolean {
-        return discoveredDevice.enrolled
+        return scannerViewModel.selectedDevice.enrolled
     }
 
-    override fun onBackPressed() {
-        currentViewModel.disconnect()
-        super.onBackPressed()
-    }
+//    override fun onBackPressed() {
+//        currentViewModel.disconnect()
+//        super.onBackPressed()
+//    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -122,7 +135,6 @@ class DeviceConfigActivity : AppCompatActivity(),
                 Log.d("MATAG", "onCreate: INITIALIZING")
             }
             ConnectionState.State.READY -> {
-                bind.deviceConfigGroup.visibility = View.VISIBLE
                 currentViewModel.startHandShake()
             }
             ConnectionState.State.DISCONNECTING -> {
@@ -130,10 +142,9 @@ class DeviceConfigActivity : AppCompatActivity(),
             }
             ConnectionState.State.DISCONNECTED -> {
                 if ((connectionState as ConnectionState.Disconnected).reason == ConnectionObserver.REASON_TERMINATE_PEER_USER) {
-                    // TODO delete history
-                    Intent(this, ScannerActivity::class.java).apply {
-                        startActivity(this)
-                    }
+                    val action =
+                        DeviceInfoFragmentDirections.actionDeviceInfoFragmentToScannerFragment()
+                    view?.findNavController()?.navigate(action)
                 }
                 Log.d("MATAG", "onCreate: DISCONNECTING reason ${connectionState.reason}")
             }
@@ -148,12 +159,10 @@ class DeviceConfigActivity : AppCompatActivity(),
             }
             MeshAccessManager.HandShakeState.HANDSHAKE_DONE -> {
                 currentViewModel.updateDisplayNodeIdByPartnerId()
-                currentViewModel.displayBleAddr = discoveredDevice.device.address
+                currentViewModel.displayBleAddr = scannerViewModel.selectedDevice.device.address
                 bind.connectingGroup.visibility = View.GONE
-                val fragmentTransaction = supportFragmentManager.beginTransaction()
-                fragmentTransaction.add(R.id.device_content_fragment,
-                    if (discoveredDevice.enrolled) DeviceActivatedFragment() else DeviceNonActivatedFragment())
-                fragmentTransaction.commit()
+                bind.deviceConfigGroup.visibility = View.VISIBLE
+                updateConnectionInfo()
             }
             else -> throw Exception("Unknown Handshake state")
         }
@@ -164,11 +173,11 @@ class DeviceConfigActivity : AppCompatActivity(),
         bind.connectingText.setText(stringId)
     }
 
-    private fun onDeviceInfoFragmentCreated() {
+    private fun updateConnectionInfo() {
         currentViewModel.updateDisplayDeviceInfo(DeviceInfo(
             currentViewModel.displayNodeId, null, null, null,
-            deviceNamePreferences.getString(discoveredDevice.device.address, "Unknown Device")))
-        currentViewModel.updateMatageekStatus(currentViewModel.displayNodeId)
+            deviceNamePreferences.getString(scannerViewModel.selectedDevice.device.address,
+                "Unknown Device")))
         currentViewModel.updateDeviceInfo(currentViewModel.displayNodeId)
     }
 
@@ -197,6 +206,5 @@ class DeviceConfigActivity : AppCompatActivity(),
     override fun onNothingSelected(parent: AdapterView<*>?) {
 //        TODO("Not yet implemented")
     }
-
 
 }

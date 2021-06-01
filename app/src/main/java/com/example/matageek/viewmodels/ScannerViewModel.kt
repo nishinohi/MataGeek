@@ -30,7 +30,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
     val deniedPermissionState: MutableLiveData<List<String>> = MutableLiveData()
     val gpsState: MutableLiveData<Boolean> = MutableLiveData()
     val devicesLiveData: DevicesLiveData = DevicesLiveData(true, false)
-    var selectedDevice: DiscoveredDevice? = null
+    lateinit var selectedDevice: DiscoveredDevice
     private val locationManager = application.getSystemService(LocationManager::class.java)
 
     fun refresh() {
