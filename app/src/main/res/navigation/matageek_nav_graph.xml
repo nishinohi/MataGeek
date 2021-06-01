@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/matageek_nav_graph"
+    app:startDestination="@id/scannerFragment">
+
+    <fragment
+        android:id="@+id/scannerFragment"
+        android:name="com.example.matageek.fragment.ScannerFragment"
+        android:label="fragment_scanner"
+        tools:layout="@layout/fragment_scanner" >
+        <action
+            android:id="@+id/action_scannerFragment_to_deviceNonActivatedFragment"
+            app:destination="@id/deviceNonActivatedFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/deviceNonActivatedFragment"
+        android:name="com.example.matageek.fragment.DeviceNonActivatedFragment"
+        android:label="DeviceNonActivatedFragment" />
+    <fragment
+        android:id="@+id/deviceActivatedFragment"
+        android:name="com.example.matageek.fragment.DeviceActivatedFragment"
+        android:label="DeviceActivatedFragment" />
+</navigation>

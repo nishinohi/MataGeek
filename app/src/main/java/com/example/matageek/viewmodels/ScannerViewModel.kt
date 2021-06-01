@@ -14,6 +14,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import com.example.matageek.adapter.DiscoveredDevice
 import com.example.matageek.fruity.hal.BleGapAdType
 import com.example.matageek.util.Util
 import no.nordicsemi.android.ble.exception.BluetoothDisabledException
@@ -29,6 +30,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
     val deniedPermissionState: MutableLiveData<List<String>> = MutableLiveData()
     val gpsState: MutableLiveData<Boolean> = MutableLiveData()
     val devicesLiveData: DevicesLiveData = DevicesLiveData(true, false)
+    var selectedDevice: DiscoveredDevice? = null
     private val locationManager = application.getSystemService(LocationManager::class.java)
 
     fun refresh() {

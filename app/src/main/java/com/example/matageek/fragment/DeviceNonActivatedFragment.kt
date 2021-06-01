@@ -11,6 +11,7 @@ import androidx.fragment.app.activityViewModels
 import com.example.matageek.databinding.FragmentDeviceNonActivatedBinding
 import com.example.matageek.dialog.DialogDeviceNameEdit
 import com.example.matageek.viewmodels.DeviceNonActivatedViewModel
+import com.example.matageek.viewmodels.ScannerViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
@@ -20,12 +21,13 @@ class DeviceNonActivatedFragment : Fragment() {
     private lateinit var _bind: FragmentDeviceNonActivatedBinding
     private val bind get() = _bind
     private val deviceNonActivatedViewModel: DeviceNonActivatedViewModel by activityViewModels()
+    private val scannerViewModel: ScannerViewModel by activityViewModels()
     var listener: DeviceActivatedFragment.OnDeviceInfoFragmentCreatedListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View? {
+    ): View {
         _bind = FragmentDeviceNonActivatedBinding.inflate(inflater, container, false)
         // Inflate the layout for this fragment
         deviceNonActivatedViewModel.deviceName.observe(viewLifecycleOwner, {
