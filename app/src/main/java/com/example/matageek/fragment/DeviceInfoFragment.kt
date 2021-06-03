@@ -179,6 +179,7 @@ class DeviceInfoFragment : Fragment(),
             deviceNamePreferences.getString(scannerViewModel.selectedDevice.device.address,
                 "Unknown Device")))
         currentViewModel.updateDeviceInfo(currentViewModel.displayNodeId)
+        currentViewModel.updateMatageekStatus(currentViewModel.displayNodeId)
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment, deviceName: String) {

@@ -23,7 +23,7 @@
                 android:id="@+id/device_manage_tool_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light" />
+                app:titleTextAppearance="@style/matageek_app_bar_title" />
 
             <ProgressBar
                 android:id="@+id/message_progress"

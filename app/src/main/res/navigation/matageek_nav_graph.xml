@@ -9,7 +9,7 @@
         android:id="@+id/scannerFragment"
         android:name="com.example.matageek.fragment.ScannerFragment"
         android:label="fragment_scanner"
-        tools:layout="@layout/fragment_scanner" >
+        tools:layout="@layout/fragment_scanner">
         <action
             android:id="@+id/action_scannerFragment_to_deviceInfoFragment"
             app:destination="@id/deviceInfoFragment" />
@@ -18,9 +18,11 @@
         android:id="@+id/deviceInfoFragment"
         android:name="com.example.matageek.fragment.DeviceInfoFragment"
         android:label="fragment_device_info"
-        tools:layout="@layout/fragment_device_info" >
+        tools:layout="@layout/fragment_device_info">
         <action
             android:id="@+id/action_deviceInfoFragment_to_scannerFragment"
-            app:destination="@id/scannerFragment" />
+            app:destination="@id/scannerFragment"
+            app:popUpTo="@id/scannerFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 </navigation>

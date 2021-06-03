@@ -12,6 +12,7 @@ import com.example.matageek.R
 import com.example.matageek.databinding.FragmentDeviceActivatedBinding
 import com.example.matageek.dialog.DialogDeviceNameEdit
 import com.example.matageek.fruity.module.MatageekModule
+import com.example.matageek.manager.DeviceInfo
 import com.example.matageek.viewmodels.DeviceActivatedViewModel
 import kotlinx.coroutines.*
 
@@ -20,15 +21,14 @@ class DeviceActivatedFragment : Fragment() {
     private val bind get() = _bind
     private val deviceActivatedViewModel: DeviceActivatedViewModel by activityViewModels()
 
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
         // Inflate the layout for this fragment
         _bind = FragmentDeviceActivatedBinding.inflate(inflater, container, false)
-        deviceActivatedViewModel.deviceName.observe(viewLifecycleOwner, {
-            bind.activatedDeviceName.text = it
-        })
         deviceActivatedViewModel.batteryInfo.observe(viewLifecycleOwner, {
             bind.activatedBattery.text = "$it%"
             bind.icActivatedBattery.setImageLevel(0)
@@ -45,9 +45,6 @@ class DeviceActivatedFragment : Fragment() {
                 if (it == MatageekModule.MatageekMode.SETUP) "START DETECT" else "STOP DETECT"
         })
         // button handler
-        bind.icActivatedDeviceNameEdit.setOnClickListener {
-            DialogDeviceNameEdit().show(childFragmentManager, "test")
-        }
         bind.modeChangeButton.setOnClickListener {
             bind.modeChangeButton.isClickable = false
             CoroutineScope(Job()).launch {
