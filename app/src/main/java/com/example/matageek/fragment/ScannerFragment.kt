@@ -11,6 +11,7 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -21,12 +22,14 @@ import com.example.matageek.DeviceConfigActivity
 import com.example.matageek.R
 import com.example.matageek.adapter.DevicesAdapter
 import com.example.matageek.adapter.DiscoveredDevice
+import com.example.matageek.databinding.ActivityMainBinding
 import com.example.matageek.databinding.ActivityScannerBinding
 import com.example.matageek.databinding.FragmentScannerBinding
 import com.example.matageek.viewmodels.ScannerViewModel
 
 class ScannerFragment : Fragment() {
     private lateinit var _bind: FragmentScannerBinding
+    lateinit var main: ActivityMainBinding
     private val bind get() = _bind
     private val scannerViewModel: ScannerViewModel by activityViewModels()
     private val requestPermissions: List<String> =

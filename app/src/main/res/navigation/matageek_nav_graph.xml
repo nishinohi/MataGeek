@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/scannerFragment"
         android:name="com.example.matageek.fragment.ScannerFragment"
-        android:label="fragment_scanner"
+        android:label="Scan Device"
         tools:layout="@layout/fragment_scanner">
         <action
             android:id="@+id/action_scannerFragment_to_deviceInfoFragment"
@@ -17,7 +17,7 @@
     <fragment
         android:id="@+id/deviceInfoFragment"
         android:name="com.example.matageek.fragment.DeviceInfoFragment"
-        android:label="fragment_device_info"
+        android:label="Device Info"
         tools:layout="@layout/fragment_device_info">
         <action
             android:id="@+id/action_deviceInfoFragment_to_scannerFragment"

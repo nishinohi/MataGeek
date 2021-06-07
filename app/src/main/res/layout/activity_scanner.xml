@@ -7,7 +7,7 @@
     tools:context=".ScannerActivity">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/scanner_bar_layout"
+        android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
@@ -15,14 +15,14 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/scanner_tool_bar"
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?actionBarSize"
             app:title="@string/MataGeek"
             app:titleTextAppearance="@style/matageek_app_bar_title" />
 
         <ProgressBar
-            android:id="@+id/scanner_progress"
+            android:id="@+id/progress_bar"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scanner_bar_layout"
+        app:layout_constraintTop_toBottomOf="@id/app_bar"
         app:layout_constraintVertical_bias="0.0"
         tools:listitem="@layout/device_item"
         tools:visibility="visible" />
@@ -57,7 +57,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scanner_bar_layout"
+        app:layout_constraintTop_toBottomOf="@id/app_bar"
         tools:visibility="gone" />
 
     <include
@@ -69,7 +69,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scanner_bar_layout"
+        app:layout_constraintTop_toBottomOf="@id/app_bar"
         tools:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

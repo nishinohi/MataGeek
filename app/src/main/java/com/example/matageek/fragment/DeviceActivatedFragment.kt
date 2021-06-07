@@ -21,8 +21,6 @@ class DeviceActivatedFragment : Fragment() {
     private val bind get() = _bind
     private val deviceActivatedViewModel: DeviceActivatedViewModel by activityViewModels()
 
-
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
@@ -61,4 +59,7 @@ class DeviceActivatedFragment : Fragment() {
         return bind.root
     }
 
+    override fun onResume() {
+        super.onResume()
+    }
 }

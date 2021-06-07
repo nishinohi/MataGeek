@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.ProgressBar
+import androidx.activity.addCallback
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
@@ -48,10 +50,6 @@ class DeviceInfoFragment : Fragment(),
         deviceNamePreferences =
             requireContext().getSharedPreferences(getString(R.string.preference_device_name_key),
                 Context.MODE_PRIVATE)
-        // action bar enable back press
-//        setSupportActionBar(bind.deviceManageToolBar)
-//        supportActionBar?.title = "Device Manager"
-//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         // set spinner adapter
         spinnerAdapter =
             ArrayAdapter<Short>(requireContext(), android.R.layout.simple_spinner_item).apply {
@@ -79,9 +77,6 @@ class DeviceInfoFragment : Fragment(),
         currentViewModel.handShakeState.observe(viewLifecycleOwner, {
             onHandShakeUpdated(it)
         })
-        currentViewModel.progressState.observe(viewLifecycleOwner, {
-            bind.messageProgress.visibility = if (it) View.VISIBLE else View.INVISIBLE
-        })
         currentViewModel.clusterSize.observe(viewLifecycleOwner, {
             bind.activatedClusterSize.text = it.toString()
             currentViewModel.updateMeshGraph()
@@ -99,32 +94,28 @@ class DeviceInfoFragment : Fragment(),
         bind.icActivatedDeviceNameEdit.setOnClickListener {
             DialogDeviceNameEdit().show(childFragmentManager, "test")
         }
+        currentViewModel.progressState.observe(viewLifecycleOwner, {
+            requireActivity().findViewById<ProgressBar>(R.id.progress_bar).visibility =
+                if (it) View.VISIBLE else View.INVISIBLE
+        })
+        currentViewModel.endProgress()
+
         return bind.root
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requireActivity().onBackPressedDispatcher.addCallback(this) {
+            currentViewModel.disconnect()
+            isEnabled = false
+        }
+    }
 
     private fun isActivated(): Boolean {
         return scannerViewModel.selectedDevice.enrolled
     }
 
-//    override fun onBackPressed() {
-//        currentViewModel.disconnect()
-//        super.onBackPressed()
-//    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                currentViewModel.disconnect()
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun onConnectionUpdated(
-        connectionState
-        : ConnectionState,
-    ) {
+    private fun onConnectionUpdated(connectionState: ConnectionState) {
         when (connectionState.state) {
             ConnectionState.State.CONNECTING -> {
                 showConnectingStatus(R.string.status_connecting)
@@ -141,10 +132,9 @@ class DeviceInfoFragment : Fragment(),
                 Log.d("MATAG", "onCreate: DISCONNECTING")
             }
             ConnectionState.State.DISCONNECTED -> {
-                if ((connectionState as ConnectionState.Disconnected).reason == ConnectionObserver.REASON_TERMINATE_PEER_USER) {
-                    val action =
-                        DeviceInfoFragmentDirections.actionDeviceInfoFragmentToScannerFragment()
-                    view?.findNavController()?.navigate(action)
+                if ((connectionState as ConnectionState.Disconnected).reason != ConnectionObserver.REASON_UNKNOWN) {
+                    view?.findNavController()
+                        ?.navigate(DeviceInfoFragmentDirections.actionDeviceInfoFragmentToScannerFragment())
                 }
                 Log.d("MATAG", "onCreate: DISCONNECTING reason ${connectionState.reason}")
             }
@@ -183,7 +173,8 @@ class DeviceInfoFragment : Fragment(),
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment, deviceName: String) {
-        deviceNamePreferences.edit().putString(currentViewModel.displayBleAddr, deviceName).apply()
+        deviceNamePreferences.edit().putString(currentViewModel.displayBleAddr, deviceName)
+            .apply()
         currentViewModel.updateDisplayDeviceInfo(DeviceInfo(currentViewModel.displayNodeId,
             null, null, null, deviceName))
     }
